@@ -1,1 +1,1594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Anthracite 1902 — The Coal Strike</title>
+<style>
+:root{--ink:#221e1a;--paper:#ede2cb;--panel:#f7efdc;--hud:#f4ecda;--cell:#ebdcb9;
+ --rust:#7a3426;--dim:#6b5c44;--line:rgba(34,30,26,.32);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0d0b09;color:var(--ink);font-family:Georgia,'Times New Roman',serif;
+ display:flex;align-items:center;justify-content:center;min-height:100vh;padding:8px;}
+#stage{width:100%;max-width:680px;background:var(--paper);border:4px solid var(--ink);
+ box-shadow:0 12px 44px rgba(0,0,0,.75);display:flex;flex-direction:column;
+ max-height:97vh;overflow:hidden;position:relative;}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;}
 
+header{background:var(--hud);border-bottom:2px solid var(--ink);padding:6px 7px 7px;flex:0 0 auto;}
+.mast{display:flex;justify-content:space-between;align-items:center;
+ border-bottom:1px solid var(--line);padding-bottom:3px;margin-bottom:5px;}
+.mast b{font-size:9.5px;letter-spacing:2.2px;text-transform:uppercase;color:var(--rust);}
+.mast span{font-size:8.5px;letter-spacing:1.4px;text-transform:uppercase;color:#4a3b2c;}
+.voices{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:4px;}
+.vc{background:var(--cell);border:1px solid var(--line);padding:2px 1px 3px;text-align:center;}
+.vc .who{font-size:6.6px;font-weight:700;text-transform:uppercase;color:#4a3d2e;
+ display:block;line-height:1.15;}
+.vc .mood{font-size:9px;margin-top:1px;}
+.vc .mood i{font-style:normal;font-size:11px;}
+.vc .mood u{text-decoration:none;font-size:6.8px;text-transform:uppercase;display:block;
+ font-family:ui-monospace,Menlo,monospace;}
+.meters{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;}
+#strip{margin-top:5px;border:1px solid var(--line);background:#e6dbbe;}
+#strip svg{display:block;width:100%;height:auto;}
+.smk{animation:smk 3.2s linear infinite;transform-box:fill-box;transform-origin:50% 100%;}
+@keyframes smk{0%{transform:translate(0,0) scale(.5);opacity:.75}
+ 100%{transform:translate(-5px,-13px) scale(1.5);opacity:0}}
+.pick{animation:pick 1.9s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%;}
+@keyframes pick{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+.dig{animation:dig 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:20% 100%;}
+@keyframes dig{0%,100%{transform:rotate(0)}50%{transform:rotate(-11deg)}}
+.flowdot{animation:flowd 3.6s linear infinite;}
+@keyframes flowd{from{transform:translateX(0);opacity:0}
+ 8%{opacity:1}88%{opacity:1}to{transform:translateX(150px);opacity:0}}
+.chaindot{animation:chaind 4.2s linear infinite;}
+@keyframes chaind{from{transform:translateX(0);opacity:0}
+ 6%{opacity:1}90%{opacity:1}to{transform:translateX(330px);opacity:0}}
+.mt{background:#dfcfab;border:1px solid var(--line);padding:2px 1px 3px;text-align:center;}
+.mt .who{font-size:6.4px;font-weight:700;text-transform:uppercase;color:var(--rust);
+ display:block;line-height:1.1;}
+.mt .num{font-size:13px;font-weight:700;font-family:ui-monospace,Menlo,monospace;}
+.mt .dl{font-size:7.6px;height:10px;font-family:ui-monospace,Menlo,monospace;color:#8c2f22;}
+.mt.up .dl{color:#2f5d34;}
+
+main{flex:0 0 auto;height:216px;background:var(--paper);overflow:hidden;border-bottom:3px solid var(--ink);}
+@media(min-width:520px){main{height:262px;}}
+main svg{display:block;width:100%;height:100%;}
+
+section{background:var(--panel);padding:9px 11px 12px;flex:1 1 auto;overflow-y:auto;}
+.tags{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+.tags b{font-size:10.5px;letter-spacing:2px;text-transform:uppercase;color:var(--rust);}
+.tags span{font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:#7a644e;
+ font-family:ui-monospace,Menlo,monospace;}
+#say{font-size:13.6px;line-height:1.5;white-space:pre-wrap;}
+.hr{border-top:1px solid var(--line);margin:8px 0 7px;}
+.gl{border-bottom:2px dotted var(--rust);cursor:pointer;color:#5c3a1e;}
+.gl:after{content:'?';font-size:8px;vertical-align:super;color:var(--rust);}
+#def{display:none;margin:7px 0 0;padding:7px 9px;background:#e6d9b6;
+ border-left:4px solid var(--rust);font-size:12px;line-height:1.42;}
+#def b{text-transform:uppercase;letter-spacing:1px;font-size:10px;}
+
+.btn{display:block;width:100%;text-align:left;background:#fffdf8;border:2px solid var(--ink);
+ box-shadow:3px 3px 0 var(--ink);padding:8px 10px;margin-bottom:7px;cursor:pointer;font-family:inherit;}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+.btn b{display:block;font-size:12.6px;color:var(--rust);margin-bottom:3px;}
+.btn i{display:block;font-size:10.6px;color:#594838;line-height:1.34;font-style:normal;}
+.btn .pro{color:#3f6b3a;} .btn .con{color:#8c1d15;}
+.go{background:var(--rust);color:#fdf6e6;border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);
+ padding:9px 0;width:100%;font-family:inherit;font-size:11px;font-weight:700;
+ letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
+.go:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+
+.grp{font-size:8.4px;letter-spacing:1.6px;text-transform:uppercase;color:var(--rust);
+ margin:7px 0 4px;font-weight:700;}
+.terms{display:grid;grid-template-columns:1fr;gap:5px;}
+@media(min-width:520px){.terms{grid-template-columns:1fr 1fr;}}
+.tm{border:2px solid #382c21;background:#f4ecd8;padding:5px 7px;cursor:pointer;display:flex;gap:6px;}
+.tm.on{background:#fcefd6;border-color:var(--rust);box-shadow:2px 2px 0 var(--rust);}
+.tm .bx{flex:0 0 12px;height:12px;border:2px solid #382c21;margin-top:2px;background:#fff;
+ font-size:9px;line-height:9px;text-align:center;color:var(--rust);font-weight:700;}
+.tm b{display:block;font-size:11px;line-height:1.2;}
+.tm i{display:block;font-size:9.2px;color:#594d40;line-height:1.28;margin-top:1px;font-style:normal;}
+
+.ask{margin-top:8px;border:2px solid var(--ink);background:#f4ecd8;padding:6px 8px;}
+.ask b{display:block;font-size:8.4px;letter-spacing:1.4px;text-transform:uppercase;color:var(--rust);}
+.ask .bar{display:block;font-family:ui-monospace,Menlo,monospace;font-size:13px;
+ letter-spacing:1px;margin:2px 0 3px;}
+.ask i{display:block;font-size:10.6px;line-height:1.35;font-style:italic;}
+.ask.thin{background:#f7e0dc;border-color:#a3231a;} .ask.thin .bar,.ask.thin i{color:#8c1d15;}
+.ask.fair{background:#e8ecdc;border-color:#5c7a4a;} .ask.fair .bar{color:#3f6b3a;}
+.ask.heavy{background:#f7ead3;border-color:#a8641c;} .ask.heavy .bar{color:#8a5115;}
+.ask.huge{background:#f7e0dc;border-color:#a3231a;} .ask.huge .bar,.ask.huge i{color:#8c1d15;}
+.wsbox{margin-top:8px;border:1px solid var(--line);background:var(--cell);display:flex;}
+.wstext{flex:1;padding:6px 8px;}
+.wstext b{display:block;font-size:8px;letter-spacing:1.4px;text-transform:uppercase;color:var(--rust);}
+.wstext p{font-size:11px;font-style:italic;line-height:1.35;margin-bottom:5px;}
+.wstext p:last-child{margin-bottom:0;}
+.wsfaces{flex:0 0 92px;border-left:1px solid var(--line);padding:5px 4px;
+ display:flex;gap:5px;justify-content:center;background:#e2d3ad;}
+.wsface{text-align:center;}
+.wsface svg{width:36px;height:36px;border:2px solid var(--ink);background:#f6ecd6;border-radius:50%;}
+.wsface span{display:block;font-size:6.6px;text-transform:uppercase;letter-spacing:.4px;
+ margin-top:2px;color:#4a3d2e;font-family:ui-monospace,Menlo,monospace;}
+
+#ovl{display:none;position:absolute;inset:10px;z-index:40;background:rgba(244,236,218,.985);
+ border:3px solid var(--ink);padding:11px;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,.45);}
+#ovl .head{display:flex;justify-content:space-between;align-items:baseline;
+ border-bottom:2px solid var(--ink);padding-bottom:4px;margin-bottom:8px;}
+#ovl .head b{font-size:10.5px;letter-spacing:2px;text-transform:uppercase;color:var(--rust);}
+#ovl .head span{font-size:7.6px;text-transform:uppercase;color:#544331;
+ font-family:ui-monospace,Menlo,monospace;}
+.card{border:2px solid;padding:6px 7px;margin-bottom:6px;display:flex;gap:8px;
+ animation:slam .3s cubic-bezier(.18,.89,.32,1.28) both;}
+@keyframes slam{0%{transform:scale(.88) translateY(12px);opacity:0}100%{transform:none;opacity:1}}
+.card .fc{flex:0 0 44px;}
+.card .fc svg{width:44px;height:44px;border:2px solid var(--ink);background:#f6ecd6;border-radius:50%;}
+.card .bd{flex:1;}
+.card .rw{display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin-bottom:2px;}
+.card .nm{font-size:9px;font-weight:700;text-transform:uppercase;line-height:1.15;}
+.card .bnd{font-size:9.4px;font-weight:700;font-family:ui-monospace,Menlo,monospace;white-space:nowrap;}
+.card q{display:block;font-size:11.4px;font-style:italic;line-height:1.36;quotes:none;}
+.card q:before,.card q:after{content:'';}
+.f-FURIOUS{background:#f7e0dc;border-color:#a3231a;} .f-FURIOUS .bnd,.f-FURIOUS .nm{color:#8c1d15;}
+.f-ANGRY{background:#f7ead3;border-color:#a8641c;} .f-ANGRY .bnd,.f-ANGRY .nm{color:#8a5115;}
+.f-COLD{background:#e5e8ea;border-color:#5b6770;} .f-COLD .bnd,.f-COLD .nm{color:#3f4950;}
+.f-GRUDGING{background:#e8ecdc;border-color:#5c7a4a;} .f-GRUDGING .bnd,.f-GRUDGING .nm{color:#3f6b3a;}
+.f-CHEERING{background:#dff0e5;border-color:#2f7d5c;} .f-CHEERING .bnd,.f-CHEERING .nm{color:#22664a;}
+.yell{animation:yell .36s infinite ease-in-out;}
+@keyframes yell{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
+#record{border-top:1px dashed var(--line);margin-top:2px;padding-top:6px;font-size:10.6px;
+ line-height:1.42;color:#4a3b2c;}
+#record b{font-size:8.4px;letter-spacing:1.4px;text-transform:uppercase;color:var(--rust);}
+
+/* approach-camera walkout */
+.apr{animation:apr 9s linear infinite;}
+@keyframes apr{
+ 0%{transform:translateY(126px) scale(.16);opacity:0}
+ 8%{opacity:1}
+ 88%{opacity:1}
+ 100%{transform:translateY(296px) scale(1.45);opacity:0}}
+.step1{animation:st .52s steps(1) infinite;}
+.step2{animation:st2 .52s steps(1) infinite;}
+@keyframes st{0%,50%{opacity:1}50.01%,100%{opacity:0}}
+@keyframes st2{0%,50%{opacity:0}50.01%,100%{opacity:1}}
+.lampglow{animation:lamp 2.6s infinite ease-in-out;}
+@keyframes lamp{0%,100%{opacity:.95}35%{opacity:.5}70%{opacity:1}}
+
+/* crowd */
+.sp .up{opacity:0;} .sp.cheer .up{opacity:1;} .sp.cheer .dn{opacity:0;}
+.sp.cheer .bod{animation:hop .44s infinite alternate ease-in-out;
+ transform-box:fill-box;transform-origin:50% 100%;}
+@keyframes hop{from{transform:translateY(0)}to{transform:translateY(-4px)}}
+.sp.leaveL{animation:outL 2.3s forwards ease-in;}
+.sp.leaveR{animation:outR 2.3s forwards ease-in;}
+@keyframes outL{0%{transform:translateX(0)}100%{transform:translateX(-230px);opacity:0}}
+@keyframes outR{0%{transform:translateX(0)}100%{transform:translateX(230px);opacity:0}}
+.sp.leaveL .bod,.sp.leaveR .bod{animation:trudge .4s steps(2) infinite;
+ transform-box:fill-box;transform-origin:50% 100%;}
+@keyframes trudge{0%{transform:translateY(0) rotate(-3deg)}100%{transform:translateY(-2px) rotate(3deg)}}
+
+/* train */
+.roll{animation:roll 15s linear infinite;}
+@keyframes roll{from{transform:translateX(700px)}to{transform:translateX(-980px)}}
+.pf{animation:pf 2.6s linear infinite;transform-box:fill-box;transform-origin:50% 50%;}
+@keyframes pf{0%{transform:translate(0,0) scale(.3);opacity:.85}
+ 100%{transform:translate(16px,-58px) scale(2.2);opacity:0}}
+.watch{animation:watch 4.4s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%;}
+.watch:nth-of-type(2n){animation-delay:-1.7s;}
+.watch:nth-of-type(3n){animation-delay:-3.1s;}
+@keyframes watch{0%,100%{transform:rotate(-1.4deg)}50%{transform:rotate(1.4deg)}}
+
+/* pump */
+.wcyc{animation:wcyc 6.5s infinite cubic-bezier(.45,0,.55,1);}
+@keyframes wcyc{0%{transform:translateY(0)}50%{transform:translateY(-27px)}
+ 70%{transform:translateY(-3px)}100%{transform:translateY(0)}}
+.wflood{animation:wflood 5.4s forwards cubic-bezier(.3,0,.4,1);}
+@keyframes wflood{0%{transform:translateY(0)}100%{transform:translateY(-134px)}}
+.piston{animation:pist 1.05s infinite ease-in-out;}
+@keyframes pist{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.beam{animation:beam 1.05s infinite ease-in-out;transform-box:fill-box;transform-origin:14% 50%;}
+@keyframes beam{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+.disch{stroke-dasharray:7 6;animation:dis .5s infinite linear,dgate 6.5s infinite;}
+@keyframes dis{to{stroke-dashoffset:-13}}
+@keyframes dgate{0%,44%{opacity:.1}52%,72%{opacity:1}80%,100%{opacity:.1}}
+.seep{stroke-dasharray:4 5;animation:seep 1.6s infinite linear;}
+@keyframes seep{to{stroke-dashoffset:-9}}
+.tmbL,.tmbR{transform-box:fill-box;transform-origin:50% 0;}
+.flood .tmbL{animation:crush 5.4s forwards ease-in;}
+.flood .tmbR{animation:crush 5.4s .3s forwards ease-in;}
+@keyframes crush{0%,60%{transform:rotate(0)}100%{transform:rotate(12deg)}}
+.flood .piston,.flood .beam{animation:none;}
+.flood .disch{opacity:0;animation:none;}
+.stopped{display:none;} .flood .stopped{display:block;}
+.flood .runlbl{display:none;}
+
+
+/* ── Act II additions ── */
+.go:disabled{opacity:.42;box-shadow:none;}
+/* relief ledger */
+.led{border:2px solid var(--ink);background:#f4ecd8;}
+.ledhead{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;
+ background:var(--cell);border-bottom:1px solid var(--line);}
+.ledhead b{font-size:9px;letter-spacing:1.6px;text-transform:uppercase;color:var(--rust);}
+.ledhead span{font-size:11px;font-family:ui-monospace,Menlo,monospace;font-weight:700;}
+.row{display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px dotted var(--line);}
+.row:last-child{border-bottom:none;}
+.row .nm{flex:1;}
+.row .nm b{display:block;font-size:11px;}
+.row .nm i{display:block;font-size:9.2px;color:#594d40;font-style:normal;line-height:1.25;}
+.row .pips{flex:0 0 66px;letter-spacing:1px;font-size:12px;color:var(--rust);
+ font-family:ui-monospace,Menlo,monospace;}
+.row button{width:22px;height:22px;border:2px solid var(--ink);background:#fffdf8;
+ font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;line-height:1;}
+.row button:active{transform:translate(1px,1px);}
+.row button:disabled{opacity:.3;}
+
+.rainA{stroke-dasharray:7 20;animation:rainf .42s linear infinite;}
+.rainB{stroke-dasharray:5 26;animation:rainf .3s linear infinite;}
+@keyframes rainf{to{stroke-dashoffset:-27}}
+.patrol{animation:patrol 17s linear infinite;}
+@keyframes patrol{from{transform:translateX(-210px)}to{transform:translateX(760px)}}
+.hoof{animation:hoof .58s infinite alternate ease-in-out;
+ transform-box:fill-box;transform-origin:50% 100%;}
+@keyframes hoof{from{transform:translateY(0)}to{transform:translateY(-4px)}}
+.shiver{animation:shiver .9s infinite ease-in-out;}
+@keyframes shiver{0%,100%{transform:translateX(0)}50%{transform:translateX(1.4px)}}
+.turn{animation:turn 1.4s forwards ease-in;}
+@keyframes turn{to{transform:translateX(-46px);opacity:0}}
+.hold{animation:hold 3.2s infinite ease-in-out;transform-box:fill-box;transform-origin:50% 100%;}
+.hold:nth-of-type(2n){animation-delay:-1.3s;}
+@keyframes hold{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
+.march{animation:march 22s linear infinite;}
+@keyframes march{from{transform:translateX(700px)}to{transform:translateX(-760px)}}
+.pace{animation:pace 9s ease-in-out infinite alternate;}
+@keyframes pace{from{transform:translateX(0)}to{transform:translateX(190px)}}
+.flick{animation:flick 1.9s steps(3) infinite;}
+@keyframes flick{0%,86%{opacity:1}90%{opacity:.45}96%{opacity:1}}
+.arc{animation:arc 2.6s ease-in infinite;}
+@keyframes arc{0%{transform:translate(0,0);opacity:0}12%{opacity:1}
+ 100%{transform:translate(210px,-46px);opacity:0}}
+.rain{animation:rain 1.1s linear infinite;}
+@keyframes rain{to{transform:translateY(26px)}}
+
+@media (prefers-reduced-motion:reduce){
+ .apr,.step1,.step2,.lampglow,.sp.cheer .bod,.roll,.watch,.wcyc,.wflood,
+ .piston,.beam,.disch,.seep,.yell,.smk,.pick,.dig,.flowdot,
+ .hold,.march,.pace,.flick,.arc,.rain,.rainA,.rainB,.patrol,.hoof,.shiver{animation:none}
+ .sp.leaveL,.sp.leaveR{animation:none;opacity:.22}
+ .turn{animation:none;opacity:.2}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <header>
+    <div class="mast"><b>The Coal Strike Chronicle · 1902</b><span id="actTag">Act I</span></div>
+    <div class="voices" id="voices"></div>
+    <div class="meters" id="meters"></div>
+    <div id="strip"></div>
+  </header>
+  <main id="art"></main>
+  <section>
+    <div class="tags"><b id="who"></b><span id="stat"></span></div>
+    <div id="say"></div>
+    <div id="def"></div>
+    <div class="hr"></div>
+    <div id="ui"></div>
+  </section>
+  <div id="ovl">
+    <div class="head"><b>Incoming reactions</b><span>angriest first ↓</span></div>
+    <div id="cards"></div><div id="record"></div>
+    <button class="go" style="margin-top:9px" onclick="dismiss()">Endure it &amp; continue →</button>
+  </div>
+</div>
+
+<script>
+/* ═══ GLOSSARY ═══ (Act I and Act II merged; Act I's wording wins on shared keys) */
+const GLOSS={
+ ton:"2,000 pounds, usually. The coal companies used a 'long ton' of 2,240 pounds or more and still called it one ton.",
+ anthracite:"Hard coal. Burns hot with almost no smoke, so it was what heated houses. In America it came from five counties in Pennsylvania and nowhere else.",
+ checkweighman:"A worker the miners pay themselves to watch the company scale. Most companies refused to allow one.",
+ docking:"When a boss decided part of your coal car was rock and took that much off your pay. He decided. You could not argue.",
+ recognition:"When a company officially agrees to deal with the union. Companies fought this harder than they fought over money.",
+ union:"A group of workers who bargain together instead of one at a time. One worker can be fired. Ten thousand cannot.",
+ bituminous:"Soft coal. Different mines, different states. Burned by factories and railroads, not homes.",
+ companystore:"A store owned by the mine, often the only one in town. You bought tools and powder there on credit, at their price.",
+ sump:"The low point of a mine where water collects so a pump can lift it out.",
+ timber:"Wooden posts and beams holding the tunnel roof up. Waterlogged timber gives way.",
+ colliery:"A whole mine site — shaft, buildings, machines, all of it.",
+ tentcolony:"Canvas camps put up on land the union rented, so evicted families had somewhere to go. They cost the strike fund money that would otherwise have bought food.",
+ coalandiron:"The Coal and Iron Police. Private officers paid by the mine companies but given real police powers by the state of Pennsylvania. They answered to the company, not to a town.",
+ local:"One branch of the union in one town. The UMW had hundreds, and each ran its own meetings.",
+ mollies:"The Molly Maguires — Irish miners hanged in the 1870s after trials built largely on a Pinkerton detective's testimony. Twenty-five years later, operators still used the name to make any Irish or Slavic miner sound like a murderer.",
+ militia:"The Pennsylvania National Guard. Citizen soldiers called out by the governor. In 1902 he eventually sent the entire division into the coal fields.",
+ blacklist:"A list of men the companies agreed among themselves never to hire again. Being on it meant leaving the region for good.",
+ eviction:"Removal from your house. Most miners rented from the company that employed them, so losing the strike and losing the roof were the same event.",
+ relief:"Food and rent money paid out to strikers' families, funded here by soft coal miners in other states who were still working.",
+ pinkerton:"A private detective agency hired by companies to infiltrate unions and report what was said in closed meetings.",
+ injunction:"A court order telling people to stop doing something. Used against unions constantly, and ignoring one meant jail without a jury."};
+const GLOSS_NAME={checkweighman:'check-weighman',companystore:'company store',
+ coalandiron:'Coal and Iron Police',mollies:'Molly Maguires',pinkerton:'Pinkerton detective',
+ tentcolony:'tent colony'};
+const parse=s=>s.replace(/\[\[(\w+)\|([^\]]+)\]\]/g,(m,k,d)=>`<span class="gl" data-k="${k}">${d}</span>`)
+                .replace(/\[\[(\w+)\]\]/g,(m,k)=>`<span class="gl" data-k="${k}">${k}</span>`);
+const md=s=>parse(s).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+                    .replace(/\*([^*]+)\*/g,'<em>$1</em>');
+
+/* ═══ STATE ═══ one object for both acts; Act II has no initializer of its own.
+   SPLIT is only moved by Act II. warms0 marks the act boundary so Act II's
+   "cheered by his own" ending still measures applause earned in Act II. */
+const S={FIELD:78,FUND:19,COUNTRY:42,STANDING:50,MINES:100,SPLIT:0,COAL:8,PRE:false,
+ rel:{cm:3,lb:-3,pr:0,ho:0},warms:0,warms0:0,flags:{},
+ mood:{cm:'GRUDGING',lb:'ANGRY',op:'COLD',pr:'COLD',ho:'COLD'}};
+let prev={...S};
+const BAND={FURIOUS:{r:1,e:'😡',t:'Furious'},ANGRY:{r:2,e:'😠',t:'Angry'},
+ COLD:{r:3,e:'🧊',t:'Cold'},GRUDGING:{r:4,e:'😐',t:'Grudging'},CHEERING:{r:5,e:'🎉',t:'Cheering'}};
+const VOICE={cm:['Contract men','Welsh &amp; Irish skilled miners'],
+ lb:['Laborers','Slavic &amp; Italian day men'],
+ op:['Coal barons','The six railroads'],
+ pr:['The press','Editors in New York &amp; Philadelphia'],
+ ho:['Households','People who must buy coal in December']};
+const ORDER=['cm','lb','op','pr','ho'];
+const METERS=[['FIELD','Men out',v=>v+'%'],['FUND','Food wks',v=>v],
+ ['COUNTRY','Public',v=>v],['STANDING','Your name',v=>v],['MINES','Mines ok',v=>v+'%']];
+const bandOf=n=>n>=6?'CHEERING':n>=3?'GRUDGING':n>=0?'COLD':n>=-3?'ANGRY':'FURIOUS';
+// Your own men are harder to please than editors are. Grudging is the usual ceiling.
+const REL_D={FURIOUS:-5,ANGRY:-2,COLD:0,GRUDGING:2,CHEERING:4};
+const relBand=n=>n>=8?'CHEERING':n>=3?'GRUDGING':n>=-2?'COLD':n>=-8?'ANGRY':'FURIOUS';
+const bandMen=n=>n>=9?'CHEERING':n>=4?'GRUDGING':n>=0?'COLD':n>=-4?'ANGRY':'FURIOUS';
+
+/* ═══ STRIKE STATUS STRIP ═══ */
+function picketFig(x,c){
+  return `<g transform="translate(${x},74)"><g class="pick">
+   <rect x="-3.2" y="-11" width="2.7" height="11" fill="${c}"/>
+   <rect x="0.5" y="-11" width="2.7" height="11" fill="${c}"/>
+   <path d="M-3.6,-11 L-3.1,-24 L3.1,-24 L3.6,-11 Z" fill="${c}"/>
+   <circle cx="0" cy="-27.4" r="2.9" fill="#c9ad8b"/>
+   <path d="M-3.3,-29 C-3.3,-32.2 3.3,-32.2 3.3,-29 L4.8,-28.4 L-3.8,-28.4 Z" fill="${c}"/>
+   <path d="M3.1,-22.5 L7.4,-33 L5.6,-33.8 L1.6,-24 Z" fill="${c}"/>
+   <rect x="6.2" y="-46" width="1.7" height="15" fill="#6b5537"/>
+   <rect x="1.4" y="-53" width="13.4" height="8" rx="1" fill="#f2e8d3" stroke="#14110e" stroke-width=".8"/>
+   <line x1="3.4" y1="-49.6" x2="12.6" y2="-49.6" stroke="#8a7a5c" stroke-width=".9"/>
+   <line x1="3.4" y1="-47.4" x2="10.6" y2="-47.4" stroke="#8a7a5c" stroke-width=".9"/>
+  </g></g>`;
+}
+function digFig(x,c){
+  return `<g transform="translate(${x},74)">
+   <rect x="-4.4" y="-10" width="2.7" height="10" fill="${c}"/>
+   <rect x="0.4" y="-10" width="2.7" height="10" fill="${c}"/>
+   <path d="M-5,-10 L-2.4,-21 L4.6,-19.6 L3,-9.4 Z" fill="${c}"/>
+   <circle cx="6.6" cy="-22.6" r="2.8" fill="#c9ad8b"/>
+   <path d="M3.6,-24.4 C3.8,-27.4 10,-26.6 9.6,-23.6 L11,-23 L3,-23.8 Z" fill="${c}"/>
+   <g class="dig"><rect x="-1" y="-20" width="15" height="1.7" transform="rotate(26 -1 -20)" fill="#6b5537"/>
+    <path d="M11.6,-8.6 L17.4,-6.2 L15.6,-1.6 L10,-4.2 Z" fill="#8d949a" stroke="#14110e" stroke-width=".7"/></g>
+  </g>`;
+}
+function houseFig(x,lit){
+  return `<g transform="translate(${x},74)">
+   <polygon points="-9.5,0 -9.5,-9 0,-16.5 9.5,-9 9.5,0"
+     fill="${lit?'#e2d5b2':'#b0a892'}" stroke="#14110e" stroke-width="1"/>
+   <rect x="-2.6" y="-6.4" width="5.2" height="6.4" fill="${lit?'#5a4a36':'#8a8272'}"/>
+   <rect x="3.8" y="-17.6" width="3.6" height="7.6" fill="${lit?'#7a6a52':'#9a9282'}" stroke="#14110e" stroke-width=".8"/>
+   ${lit?`<g fill="#8f9aa2">
+    <g class="smk"><circle cx="5.6" cy="-20" r="2.4"/></g>
+    <g class="smk" style="animation-delay:-1.1s"><circle cx="5.6" cy="-20" r="2.4"/></g>
+    <g class="smk" style="animation-delay:-2.2s"><circle cx="5.6" cy="-20" r="2.4"/></g></g>`:''}
+  </g>`;
+}
+function coalNote(c,pre){
+  if(pre) return 'Every stove in the East burns this. Nobody thinks about it at all.';
+  return c>=8 ? 'The cities are not cold yet. Outside this valley nobody has noticed you.'
+   : c>=6 ? 'Coal is getting dear in the East. Editors have begun to ask who is to blame.'
+   : c>=4 ? 'Schools are closing for want of heat. People are pulling coal off rail cars.'
+   : c>=2 ? 'The cities are freezing. This is the first week anyone in Washington read your name.'
+   : 'There is no coal. What happens now happens because of that, not because of you.';
+}
+function drawStrip(){
+  const el=document.getElementById('strip'); if(!el) return;
+  const pre=!!S.PRE, N=12;
+  const out = pre?0:Math.round(N*S.FIELD/100);
+  const working = N-out;
+  const H=8, lit = pre?H:Math.max(0,Math.min(H,S.COAL));
+  let men='';
+  for(let i=0;i<N;i++) men += i<out ? picketFig(20+i*22.5,'#3a322a') : digFig(20+i*22.5,'#6e675c');
+  let houses=''; for(let i=0;i<H;i++) houses += houseFig(492+i*21, i<lit);
+  const nd = Math.max(0, Math.round(working/N*9));
+  let dots='';
+  for(let i=0;i<nd;i++) dots += `<g transform="translate(300,58)"><g class="flowdot"
+    style="animation-delay:-${(i*3.6/nd).toFixed(2)}s"><circle r="3" fill="#241f1a"/></g></g>`;
+  const flowLabel = pre?'FULL' : nd===0?'NOTHING MOVING' : nd<=3?'A TRICKLE' : 'STILL MOVING';
+  return el.innerHTML=`<svg viewBox="0 0 660 108" xmlns="http://www.w3.org/2000/svg" font-family="Georgia,serif">
+   <rect width="660" height="108" fill="#e6dbbe"/>
+   <text x="12" y="14" font-size="8.6" letter-spacing="1.3" fill="#7a3426">
+    THE FIELDS · ${pre?'ALL 12 AT WORK':out+' OF '+N+' STILL OUT'}</text>
+   ${men}
+   <line x1="292" y1="6" x2="292" y2="84" stroke="#c3b494" stroke-width="1"/>
+   <text x="300" y="14" font-size="8.6" letter-spacing="1.3" fill="#7a3426">COAL · ${flowLabel}</text>
+   <line x1="300" y1="58" x2="452" y2="58" stroke="#c3b494" stroke-width="1" stroke-dasharray="3 4"/>
+   <polygon points="456,58 448,54 448,62" fill="#c3b494"/>
+   ${dots}
+   ${nd===0?`<text x="376" y="46" text-anchor="middle" font-size="9" font-style="italic" fill="#8c2f22">nothing is coming out</text>`:''}
+   <g opacity=".5">${digFig(310,'#a09884')}${digFig(336,'#a09884')}${digFig(362,'#a09884')}</g>
+   <text x="300" y="94" font-size="7.4" fill="#6b5c44">🔒 soft coal: 300,000 at work, not yours —</text>
+   <text x="300" y="103" font-size="7.4" fill="#6b5c44">and it will not burn in a house stove.</text>
+   <line x1="472" y1="6" x2="472" y2="84" stroke="#c3b494" stroke-width="1"/>
+   <text x="480" y="14" font-size="8.6" letter-spacing="1.3" fill="#7a3426">
+    THE CITIES · ${lit} OF ${H} WARM</text>
+   ${houses}
+   <text x="12" y="98" font-size="7.6" font-style="italic" fill="#5c4a33">${coalNote(lit,pre)}</text>
+  </svg>`;
+}
+
+/* ═══ THE MACHINE, BEFORE THE STRIKE ═══ */
+function scChain(){
+  let dots='';
+  for(let i=0;i<11;i++) dots += `<g transform="translate(196,196)"><g class="chaindot"
+    style="animation-delay:-${(i*4.2/11).toFixed(2)}s"><circle r="5" fill="#191510"/></g></g>`;
+  let diggers='';
+  [40,74,108,142].forEach((x,i)=>{ diggers += digFig2(x,214,1.5+((i%2)*.12)); });
+  let houses='';
+  for(let i=0;i<7;i++) houses += `<g transform="translate(${548+ (i%4)*32},${i<4?196:250}) scale(1.5)">
+    <polygon points="-9.5,0 -9.5,-9 0,-16.5 9.5,-9 9.5,0" fill="#e2d5b2" stroke="#14110e" stroke-width="1.1"/>
+    <rect x="-2.6" y="-6.4" width="5.2" height="6.4" fill="#5a4a36"/>
+    <rect x="3.8" y="-17.6" width="3.6" height="7.6" fill="#7a6a52" stroke="#14110e" stroke-width=".8"/>
+    <g fill="#8f9aa2"><g class="smk"><circle cx="5.6" cy="-20" r="2.4"/></g>
+     <g class="smk" style="animation-delay:-1.1s"><circle cx="5.6" cy="-20" r="2.4"/></g>
+     <g class="smk" style="animation-delay:-2.2s"><circle cx="5.6" cy="-20" r="2.4"/></g></g></g>`;
+  return wrap(`
+  <rect width="660" height="300" fill="url(#pg)"/>
+  <rect x="0" y="0" width="660" height="150" fill="url(#hl)" opacity=".3"/>
+  <path d="M0,150 L96,60 L200,150 Z" fill="#241f1a"/>
+  <path d="M22,150 L22,104 C22,80 74,80 74,104 L74,150 Z" fill="#0a0806"/>
+  <path d="M22,106 C22,80 74,80 74,106" fill="none" stroke="#14110e" stroke-width="4"/>
+  <path d="M214,150 L214,54 L244,54 L244,30 L330,30 L330,150 Z" fill="#2c2722" stroke="#14110e" stroke-width="2.4"/>
+  <g fill="#f2e8d3" stroke="#14110e" stroke-width="1.4">
+   <rect x="256" y="52" width="16" height="20"/><rect x="284" y="52" width="16" height="20"/>
+   <rect x="256" y="88" width="16" height="20"/><rect x="284" y="88" width="16" height="20"/></g>
+  <line x1="0" y1="150" x2="660" y2="150" stroke="#14110e" stroke-width="3"/>
+  <rect x="0" y="150" width="660" height="150" fill="#cdbb96"/>
+  <line x1="196" y1="196" x2="530" y2="196" stroke="#8d7f63" stroke-width="3" stroke-dasharray="5 6"/>
+  <polygon points="534,196 524,190 524,202" fill="#8d7f63"/>
+  ${dots}${diggers}${houses}
+  <g font-size="10" letter-spacing="2" fill="#7a3426">
+   <text x="96" y="286" text-anchor="middle">THE MEN</text>
+   <text x="362" y="286" text-anchor="middle">THE COAL</text>
+   <text x="596" y="286" text-anchor="middle">EVERY HOUSE IN THE EAST</text></g>
+  <text x="330" y="176" text-anchor="middle" font-size="10.5" font-style="italic" fill="#3a2f24">
+   One machine, running since before you were born.</text>`);
+}
+function digFig2(x,y,s){
+  return `<g transform="translate(${x},${y}) scale(${s})">
+   <rect x="-4.4" y="-10" width="2.7" height="10" fill="#241f1a"/>
+   <rect x="0.4" y="-10" width="2.7" height="10" fill="#241f1a"/>
+   <path d="M-5,-10 L-2.4,-21 L4.6,-19.6 L3,-9.4 Z" fill="#241f1a"/>
+   <circle cx="6.6" cy="-22.6" r="2.8" fill="#c9ad8b"/>
+   <path d="M3.6,-24.4 C3.8,-27.4 10,-26.6 9.6,-23.6 L11,-23 L3,-23.8 Z" fill="#241f1a"/>
+   <g class="dig"><rect x="-1" y="-20" width="15" height="1.7" transform="rotate(26 -1 -20)" fill="#6b5537"/>
+    <path d="M11.6,-8.6 L17.4,-6.2 L15.6,-1.6 L10,-4.2 Z" fill="#8d949a" stroke="#14110e" stroke-width=".7"/></g>
+  </g>`;
+}
+
+function hud(){
+  document.getElementById('voices').innerHTML=ORDER.map(k=>{
+    const b=BAND[S.mood[k]];
+    return `<div class="vc"><span class="who">${VOICE[k][0]}${k==='op'?' 🔒':''}</span>
+      <span class="mood"><i>${b.e}</i><u>${b.t}</u></span></div>`;}).join('');
+  document.getElementById('meters').innerHTML=METERS.map(([k,l,f])=>{
+    const d=S[k]-prev[k],a=d===0?'':(d>0?'▲'+d:'▼'+Math.abs(d));
+    return `<div class="mt ${d>0?'up':''}"><span class="who">${l}</span>
+      <div class="num">${f(S[k])}</div><div class="dl">${a}</div></div>`;}).join('');
+  drawStrip();
+}
+
+/* ═══ SVG ═══ */
+const DEFS=`<defs>
+<radialGradient id="pg" cx="50%" cy="44%" r="76%"><stop offset="0%" stop-color="#fffef6"/>
+ <stop offset="68%" stop-color="#f2e8d3"/><stop offset="100%" stop-color="#d9c8a6"/></radialGradient>
+<pattern id="hd" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+ <line x1="0" y1="0" x2="0" y2="4" stroke="#14110e" stroke-width="1.1"/>
+ <line x1="0" y1="0" x2="4" y2="0" stroke="#14110e" stroke-width="1.1"/></pattern>
+<pattern id="hl" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+ <line x1="0" y1="0" x2="0" y2="7" stroke="#14110e" stroke-width=".85"/></pattern>
+<radialGradient id="lamp"><stop offset="0%" stop-color="#fff6d2"/>
+ <stop offset="45%" stop-color="#f0c357" stop-opacity=".6"/>
+ <stop offset="100%" stop-color="#e08a1e" stop-opacity="0"/></radialGradient>
+<linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+ <stop offset="0%" stop-color="#4a8ba3"/><stop offset="100%" stop-color="#12303c"/></linearGradient></defs>`;
+const wrap=(inner,cls='')=>`<svg class="${cls}" viewBox="0 0 660 300"
+ xmlns="http://www.w3.org/2000/svg" font-family="Georgia,serif">${DEFS}${inner}</svg>`;
+
+/* front-facing miner, feet at origin */
+function frontMiner(sign){
+  return `<g>
+   <g class="step1">
+    <path d="M-11,0 L-10,-30 L-2,-30 L-3,0 Z" fill="#1c1713"/>
+    <path d="M4,-2 L2,-30 L10,-30 L12,-2 Z" fill="#241f1a"/></g>
+   <g class="step2">
+    <path d="M-12,-2 L-10,-30 L-2,-30 L-4,-2 Z" fill="#241f1a"/>
+    <path d="M3,0 L2,-30 L10,-30 L11,0 Z" fill="#1c1713"/></g>
+   <path d="M-13,-28 L-14,-56 L-9,-74 L9,-74 L14,-56 L13,-28 Z" fill="#2b241d"/>
+   <path d="M-14,-56 L-21,-32 L-16,-30 L-9,-50 Z" fill="#2b241d"/>
+   <path d="M14,-56 L21,-32 L16,-30 L9,-50 Z" fill="#2b241d"/>
+   <path d="M-9,-74 L-6,-64 L6,-64 L9,-74 Z" fill="#1a1511"/>
+   <ellipse cx="0" cy="-84" rx="10" ry="11.5" fill="#d2b790"/>
+   <path d="M-6,-88 L-2,-88 M2,-88 L6,-88" stroke="#14110e" stroke-width="1.8"/>
+   <path d="M-3,-78 C0,-76 2,-77 3,-79" stroke="#14110e" stroke-width="1.5" fill="none"/>
+   <path d="M-7,-91 C-7,-99 7,-99 7,-91 L10,-90 L-10,-90 Z" fill="#14110e"/>
+   <circle class="lampglow" cx="0" cy="-97" r="9" fill="url(#lamp)"/>
+   <rect x="-2.6" y="-99" width="5.2" height="6" fill="#c4974f" stroke="#14110e" stroke-width="1"/>
+   ${sign?`<rect x="-30" y="-108" width="60" height="22" fill="#f2e8d3" stroke="#14110e" stroke-width="2"/>
+     <text x="0" y="-93" text-anchor="middle" font-size="9" letter-spacing="1" fill="#7a3426">WE ARE OUT</text>
+     <rect x="-2" y="-88" width="4" height="26" fill="#5c4a30"/>`:''}
+  </g>`;
+}
+function scWalkout(){
+  const lanes=[[-52,0,0],[38,-1.3,0],[-6,-2.6,1],[74,-3.9,0],[-88,-5.2,0],[16,-6.5,0],[-34,-7.8,0]];
+  return wrap(`
+  <rect width="660" height="300" fill="url(#pg)"/>
+  <rect x="0" y="0" width="660" height="128" fill="url(#hl)" opacity=".45"/>
+  <path d="M0,128 L120,44 L232,128 Z" fill="#241f1a"/>
+  <path d="M660,128 L556,58 L448,128 Z" fill="#241f1a"/>
+  <path d="M470,128 L470,32 L500,32 L500,8 L594,8 L594,128 Z" fill="#2c2722" stroke="#14110e" stroke-width="2.5"/>
+  <g fill="#f2e8d3" stroke="#14110e" stroke-width="1.4">
+   <rect x="512" y="28" width="16" height="20"/><rect x="540" y="28" width="16" height="20"/>
+   <rect x="568" y="28" width="16" height="20"/><rect x="512" y="64" width="16" height="20"/></g>
+  <rect x="0" y="128" width="660" height="172" fill="#cdbb96"/>
+  <path d="M276,128 L276,86 C276,58 384,58 384,86 L384,128 Z" fill="#0a0806"/>
+  <path d="M276,90 C276,58 384,58 384,90" fill="none" stroke="#14110e" stroke-width="6"/>
+  <rect x="268" y="120" width="124" height="10" fill="#3d2c1e" stroke="#14110e" stroke-width="2"/>
+  <line x1="0" y1="128" x2="660" y2="128" stroke="#14110e" stroke-width="3"/>
+  <g transform="translate(330,0)">
+   ${lanes.map(([x,d,sg])=>`<g class="apr" style="animation-delay:${d}s">
+     <g transform="translate(${x},0)">${frontMiner(sg)}</g></g>`).join('')}</g>`);
+}
+
+/* ═══ HALL ═══ */
+const ROWS=[{y:148,s:.5,n:11},{y:170,s:.6,n:10},{y:196,s:.72,n:9},{y:226,s:.86,n:8},{y:262,s:1.02,n:7}];
+let CROWD=[];(function(){let i=0;ROWS.forEach((r,ri)=>{const span=572-ri*16,x0=330-span/2,gap=span/(r.n-1);
+ for(let c=0;c<r.n;c++){CROWD.push({i:i++,x:x0+c*gap,y:r.y,s:r.s,
+  bloc:((c*7+ri*3)%10<6)?'cm':'lb',quirk:(i*13)%7});}});})();
+function sprite(p){
+  const cm=p.bloc==='cm', dark=cm?'#3a322a':'#14110e';
+  const cap=cm?`<path d="M-5.6,-31.4 C-5.6,-35.6 5.6,-35.6 5.6,-31.4 L8.2,-30.4 L-6,-30.4 Z" fill="${dark}"/>`
+   :`<path d="M-5.2,-31.2 C-5.2,-37 5.2,-37 5.2,-31.2 Z" fill="${dark}"/>
+     <rect x="-5.6" y="-31.6" width="11.2" height="1.6" fill="${dark}"/>`;
+  return `<g class="sp" id="sp${p.i}" transform="translate(${p.x},${p.y}) scale(${p.s})"><g class="bod">
+   <rect x="-5.5" y="-8" width="4.4" height="8" fill="${dark}"/>
+   <rect x="1.1" y="-8" width="4.4" height="8" fill="${dark}"/>
+   <path d="M-6,-8 L-5,-24 L5,-24 L6,-8 Z" fill="${dark}"/>
+   ${cm?`<path d="M-5,-24 L5,-24 L4.4,-19 L-4.4,-19 Z" fill="#c9b48c"/>`:''}
+   <circle cx="0" cy="-29" r="4.6" fill="#c9ad8b" stroke="#14110e" stroke-width="1"/>${cap}
+   <g class="dn"><path d="M-5,-22 L-8.5,-10 L-6.4,-9.2 L-2.8,-20 Z" fill="${dark}"/>
+    <path d="M5,-22 L8.5,-10 L6.4,-9.2 L2.8,-20 Z" fill="${dark}"/></g>
+   <g class="up"><path d="M-5,-22 L-10,-33 L-8,-34.6 L-2.8,-24 Z" fill="${dark}"/>
+    <path d="M5,-22 L10,-33 L8,-34.6 L2.8,-24 Z" fill="${dark}"/></g></g></g>`;
+}
+function scHall(){
+  return wrap(`
+  <rect width="660" height="300" fill="url(#pg)"/>
+  <rect x="0" y="0" width="660" height="118" fill="#2b2419"/>
+  <rect x="0" y="0" width="660" height="118" fill="url(#hl)" opacity=".35"/>
+  <rect x="92" y="18" width="476" height="32" fill="#f2e8d3" stroke="#14110e" stroke-width="2.5"/>
+  <text x="330" y="40" text-anchor="middle" font-size="13" letter-spacing="4" fill="#7a3426">
+   UNITED MINE WORKERS · DISTRICTS 1, 7, 9</text>
+  <path d="M0,118 L46,118 L46,300 L0,300 Z" fill="#171310"/>
+  <path d="M660,118 L614,118 L614,300 L660,300 Z" fill="#171310"/>
+  <text x="23" y="210" text-anchor="middle" font-size="8" fill="#c9b083" transform="rotate(-90 23 210)">EXIT</text>
+  <text x="637" y="210" text-anchor="middle" font-size="8" fill="#c9b083" transform="rotate(90 637 210)">EXIT</text>
+  <polygon points="258,118 268,72 392,72 402,118" fill="#3b2b1d" stroke="#14110e" stroke-width="2.5"/>
+  <rect x="262" y="64" width="136" height="9" fill="#4a3726" stroke="#14110e" stroke-width="2"/>
+  <g transform="translate(330,64)">
+   <path d="M-13,0 L-12,-26 L12,-26 L13,0 Z" fill="#3c4a56" stroke="#14110e" stroke-width="1.8"/>
+   <polygon points="-5,-26 0,-17 5,-26" fill="#fffdf5" stroke="#14110e" stroke-width="1.2"/>
+   <circle cx="0" cy="-34" r="9.4" fill="#e6bd94" stroke="#14110e" stroke-width="2"/>
+   <path d="M-9.4,-36 C-9.4,-46 9.4,-46 9.4,-36 C6,-42 -6,-42 -9.4,-36 Z" fill="#3a2c1c"/>
+   <circle cx="-3.4" cy="-35" r="1.5" fill="#14110e"/><circle cx="3.4" cy="-35" r="1.5" fill="#14110e"/>
+   <path d="M-4,-27 C-1,-25 1,-25 4,-27" stroke="#14110e" stroke-width="1.3" fill="none"/>
+   <path d="M-12,-24 L-22,-14 L-19,-11 L-9,-20 Z" fill="#3c4a56" stroke="#14110e" stroke-width="1.4"/></g>
+  <g id="crowd">${CROWD.map(sprite).join('')}</g>
+  <line x1="0" y1="288" x2="660" y2="288" stroke="#14110e" stroke-width="3"/>
+  <rect x="12" y="262" width="182" height="22" fill="#f2e8d3" stroke="#14110e" stroke-width="1.6"/>
+  <text x="103" y="277" text-anchor="middle" font-size="7.8" fill="#3a2f24">
+   flat cap = contract men · round cap = laborers</text>`);
+}
+
+/* ═══ TRAIN ═══ */
+function backMiner(x,s,cm){
+  const dark=cm?'#3a322a':'#17130f';
+  return `<g class="watch" transform="translate(${x},296) scale(${s})">
+   <rect x="-9" y="-22" width="7" height="22" fill="${dark}"/>
+   <rect x="2" y="-22" width="7" height="22" fill="${dark}"/>
+   <path d="M-11,-22 L-10,-58 L10,-58 L11,-22 Z" fill="${dark}"/>
+   <path d="M-10,-56 L-16,-30 L-11,-28 L-6,-50 Z" fill="${dark}"/>
+   <path d="M10,-56 L16,-30 L11,-28 L6,-50 Z" fill="${dark}"/>
+   <circle cx="0" cy="-66" r="8.4" fill="#8d7355"/>
+   ${cm?`<path d="M-9,-70 C-9,-77 9,-77 9,-70 L13,-68.6 L-9.6,-68.6 Z" fill="${dark}"/>`
+       :`<path d="M-8.4,-69.6 C-8.4,-79 8.4,-79 8.4,-69.6 Z" fill="${dark}"/>`}</g>`;
+}
+function scRail(){
+  const car=(x)=>`<g transform="translate(${x},0)">
+    <rect x="0" y="112" width="150" height="56" fill="#181411" stroke="#14110e" stroke-width="2.4"/>
+    <path d="M0,112 Q75,78 150,112 Z" fill="#0d0a08"/>
+    <circle cx="34" cy="176" r="13" fill="#3b322a" stroke="#14110e" stroke-width="2"/>
+    <circle cx="116" cy="176" r="13" fill="#3b322a" stroke="#14110e" stroke-width="2"/></g>`;
+  return wrap(`
+  <rect width="660" height="300" fill="url(#pg)"/>
+  <rect x="0" y="188" width="660" height="8" fill="#4a3e35"/>
+  <g class="roll">
+   <g fill="#2b2621">
+    <g class="pf" style="animation-delay:0s"><circle cx="37" cy="34" r="13"/></g>
+    <g class="pf" style="animation-delay:-.65s"><circle cx="37" cy="34" r="13"/></g>
+    <g class="pf" style="animation-delay:-1.3s"><circle cx="37" cy="34" r="13"/></g>
+    <g class="pf" style="animation-delay:-1.95s"><circle cx="37" cy="34" r="13"/></g></g>
+   <rect x="0" y="98" width="196" height="70" fill="#241e1a" stroke="#14110e" stroke-width="2.6"/>
+   <polygon points="0,168 -20,192 52,192 34,168" fill="#3a2f26" stroke="#14110e" stroke-width="2"/>
+   <rect x="24" y="46" width="26" height="52" fill="#1b1612" stroke="#14110e" stroke-width="2.4"/>
+   <rect x="150" y="80" width="68" height="88" fill="#2d251f" stroke="#14110e" stroke-width="2.4"/>
+   <rect x="166" y="98" width="30" height="28" fill="#f4ebd7" stroke="#14110e" stroke-width="1.8"/>
+   <g fill="#3b322a" stroke="#14110e" stroke-width="2">
+    <circle cx="40" cy="176" r="17"/><circle cx="96" cy="176" r="17"/>
+    <circle cx="152" cy="176" r="17"/><circle cx="200" cy="176" r="13"/></g>
+   ${car(236)}${car(400)}${car(564)}${car(728)}</g>
+  <rect x="0" y="196" width="660" height="104" fill="#c2ae88"/>
+  <g stroke="#14110e" stroke-width="2">
+   ${Array.from({length:14},(_,i)=>`<line x1="${18+i*48}" y1="196" x2="${8+i*48}" y2="216"/>`).join('')}</g>
+  ${backMiner(96,1,1)}${backMiner(178,.94,0)}${backMiner(262,1.05,0)}
+  ${backMiner(438,.98,1)}${backMiner(524,.9,1)}${backMiner(596,1.02,0)}
+  <text x="330" y="290" text-anchor="middle" font-size="10.5" font-style="italic" fill="#3a2f24">
+   Their wages feed your families. Your men watch them roll past every day.</text>`);
+}
+
+/* ═══ PUMP ═══ */
+function scPump(flood){
+  return wrap(`
+  <rect width="660" height="300" fill="#140f0c"/>
+  <rect x="0" y="0" width="660" height="50" fill="#382e25"/>
+  <rect x="0" y="50" width="660" height="152" fill="#1f1812"/>
+  <rect x="0" y="0" width="660" height="202" fill="url(#hd)" opacity=".3"/>
+  <path d="M0,104 L660,104 L660,202 L0,202 Z" fill="#080706"/>
+  <text x="10" y="15" class="mono" font-size="7.6" fill="#9e8469">SURFACE</text>
+  <text x="10" y="78" class="mono" font-size="7.6" fill="#c4974f">COAL VEIN · HAULAGE TUNNEL</text>
+  <text x="10" y="252" class="mono" font-size="7.6" fill="#58a6bf">WATER IN THE ROCK, PUSHING UP DAY AND NIGHT</text>
+  <line x1="0" y1="202" x2="660" y2="202" stroke="#4a3e35" stroke-width="3"/>
+  <path d="M300,202 L318,232 L402,232 L420,202 Z" fill="#0a0806" stroke="#3a3128" stroke-width="1.6"/>
+  <text x="360" y="245" text-anchor="middle" class="mono" font-size="7" fill="#7f9aa6">SUMP</text>
+  <g class="tmbL"><rect x="126" y="104" width="11" height="94" fill="#3d2c1e" stroke="#120c08" stroke-width="1.4"/>
+   <rect x="121" y="100" width="72" height="9" fill="#4a3524" stroke="#120c08" stroke-width="1.4"/></g>
+  <g class="tmbR"><rect x="238" y="104" width="11" height="94" fill="#3d2c1e" stroke="#120c08" stroke-width="1.4"/>
+   <rect x="233" y="100" width="72" height="9" fill="#4a3524" stroke="#120c08" stroke-width="1.4"/></g>
+  <g class="seep" stroke="#58a6bf" stroke-width="1.6" fill="none" opacity=".8">
+   <path d="M40,290 L40,238"/><path d="M120,294 L120,240"/><path d="M212,292 L212,236"/>
+   <path d="M470,294 L470,240"/><path d="M556,290 L556,238"/></g>
+  <g fill="#58a6bf" opacity=".8">
+   <polygon points="40,230 36,238 44,238"/><polygon points="120,232 116,240 124,240"/>
+   <polygon points="212,228 208,236 216,236"/><polygon points="470,232 466,240 474,240"/>
+   <polygon points="556,230 552,238 560,238"/></g>
+  <g class="${flood?'wflood':'wcyc'}">
+   <path d="M0,230 Q160,224 330,230 T660,225 L660,320 L0,320 Z" fill="url(#water)"/>
+   <g stroke="#9fd3e4" stroke-width="1.4" opacity=".6">
+    <line x1="24" y1="238" x2="150" y2="238"/><line x1="210" y1="240" x2="410" y2="240"/>
+    <line x1="470" y1="236" x2="606" y2="236"/></g></g>
+  <g transform="translate(486,20)">
+   <rect x="36" y="0" width="12" height="180" fill="#4b5760" stroke="#141a1f" stroke-width="1.6"/>
+   <line class="disch" x1="42" y1="172" x2="42" y2="8" stroke="#7fd0e8" stroke-width="4"/>
+   <g class="beam"><rect x="-6" y="50" width="86" height="9" rx="3" fill="#8c9ba5" stroke="#141a1f" stroke-width="1.4"/></g>
+   <rect x="8" y="92" width="76" height="84" fill="#2d353b" stroke="#121619" stroke-width="2"/>
+   <circle cx="46" cy="134" r="20" fill="#3f4b54" stroke="#121619" stroke-width="1.6"/>
+   <g class="piston"><rect x="38" y="60" width="16" height="34" fill="#d49b38" stroke="#121619" stroke-width="1.4"/></g>
+   <text x="46" y="192" text-anchor="middle" class="mono" font-size="7" fill="#c9b083">STEAM PUMP</text>
+   <g class="stopped"><rect x="-6" y="96" width="100" height="20" fill="#8c1d15" stroke="#f4ebd7" stroke-width="1.4"/>
+    <text x="44" y="110" text-anchor="middle" class="mono" font-size="9" fill="#f7e0dc" letter-spacing="1.2">STOPPED</text></g></g>
+  <g transform="translate(150,144)">
+   <polygon points="30,14 84,14 76,44 38,44" fill="#1b1612" stroke="#100d0a" stroke-width="1.6"/>
+   <path d="M30,14 Q57,2 84,14 Z" fill="#090706"/>
+   <circle cx="42" cy="50" r="6" fill="#3b322a" stroke="#100d0a" stroke-width="1.3"/>
+   <circle cx="70" cy="50" r="6" fill="#3b322a" stroke="#100d0a" stroke-width="1.3"/>
+   <g transform="translate(-6,2)">
+    <rect x="5" y="42" width="5" height="14" fill="#2d3842"/><rect x="13" y="42" width="5" height="14" fill="#2d3842"/>
+    <path d="M4,42 C7,26 17,26 20,38 L19,44 L5,44 Z" fill="#2d3842" stroke="#100d0a" stroke-width="1.4"/>
+    <circle cx="12" cy="20" r="7.6" fill="#c9ad8b" stroke="#100d0a" stroke-width="1.3"/>
+    <path d="M4,17 C4,9 20,9 20,17 L22,18 L2,18 Z" fill="#14110e"/>
+    <line x1="19" y1="38" x2="35" y2="42" stroke="#c9ad8b" stroke-width="3.2" stroke-linecap="round"/>
+    <circle class="lampglow" cx="12" cy="10" r="10" fill="url(#lamp)"/></g></g>
+  <g class="runlbl" fill="#9fc9d6">
+   <path d="M232,214 L266,214" stroke="#9fc9d6" stroke-width="1.4"/>
+   <text x="228" y="217" text-anchor="end" class="mono" font-size="7">boot height</text></g>
+  <text x="330" y="288" text-anchor="middle" font-size="10.5" font-style="italic" fill="${flood?'#e8a49a':'#9fc9d6'}">
+   ${flood?'Nobody is running the engines. It will not stop rising.'
+          :'It creeps up to their boots. The pump takes it out. Then it starts again.'}</text>`,
+  flood?'flood':'');
+}
+
+function scPaper(h,d){
+  const cols=METERS.map(([k,l,f])=>`${l.toUpperCase()} ${f(S[k])}`).join('   |   ');
+  return wrap(`
+  <rect width="660" height="300" fill="#fffdf3"/>
+  <rect x="14" y="12" width="632" height="276" fill="none" stroke="#14110e" stroke-width="2.5"/>
+  <text x="330" y="52" text-anchor="middle" font-size="26" letter-spacing="4">THE SCRANTON REPUBLICAN</text>
+  <line x1="46" y1="64" x2="614" y2="64" stroke="#14110e" stroke-width="2.5"/>
+  <line x1="46" y1="69" x2="614" y2="69" stroke="#14110e" stroke-width="1"/>
+  <text x="330" y="126" text-anchor="middle" font-size="${Math.min(29,Math.round(600/(.7*h.length)))}" font-weight="700">${h}</text>
+  <text x="330" y="156" text-anchor="middle" font-size="14" font-style="italic" fill="#6b5c44">${d}</text>
+  <line x1="150" y1="176" x2="510" y2="176" stroke="#14110e" stroke-width="1.2"/>
+  <text x="330" y="200" text-anchor="middle" class="mono" font-size="9.6">${cols}</text>
+  <g stroke="#cfc2a0" stroke-width="1">
+   ${Array.from({length:5},(_,i)=>`<line x1="60" y1="${222+i*14}" x2="322" y2="${222+i*14}"/>`).join('')}
+   ${Array.from({length:5},(_,i)=>`<line x1="342" y1="${222+i*14}" x2="600" y2="${222+i*14}"/>`).join('')}</g>
+  <line x1="332" y1="214" x2="332" y2="288" stroke="#14110e" stroke-width="1"/>`);
+}
+
+/* ═══ FACES ═══ */
+const FACE={
+ cm:{rx:37,ry:44,cy:54,skin:'#eccfa8'}, lb:{rx:42,ry:40,cy:56,skin:'#d2a878'},
+ op:{rx:33,ry:47,cy:52,skin:'#f4e6d0'}, pr:{rx:38,ry:42,cy:54,skin:'#f7ead5'},
+ ho:{rx:39,ry:43,cy:55,skin:'#f0d7bb'}};
+function faceSvg(k,band){
+  const F=FACE[k];
+  const open=band==='FURIOUS'?15:band==='ANGRY'?10:band==='CHEERING'?12:3;
+  const eyeY=F.cy+2, browY=(band==='FURIOUS'||band==='ANGRY')?F.cy-13:F.cy-16;
+  const tilt=(band==='FURIOUS'||band==='ANGRY')?7:band==='CHEERING'?-6:0;
+  const mY=F.cy+26;
+  const brow=`<path d="M${50-F.rx+7},${browY} L42,${browY+tilt} M${50+F.rx-7},${browY} L58,${browY+tilt}"
+    stroke="#2a1a0c" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+  let hair='',gear='',extra='';
+  if(k==='cm'){
+    hair=`<path d="M${50-F.rx-3},${F.cy-24} C${50-F.rx-6},${F.cy-44} ${50+F.rx+6},${F.cy-44}
+      ${50+F.rx+3},${F.cy-24} L${50+F.rx+11},${F.cy-20} L${50-F.rx-11},${F.cy-20} Z" fill="#4a3a26"/>
+      <path d="M${50-F.rx-11},${F.cy-21} L${50+F.rx+13},${F.cy-22} L${50+F.rx+15},${F.cy-15}
+      L${50-F.rx-11},${F.cy-14} Z" fill="#3a2c1c"/>`;
+    extra=`<path d="M50,${mY-9} C34,${mY-14} 20,${mY-6} 17,${mY+3} C27,${mY+9} 40,${mY+3} 50,${mY-2}
+      C60,${mY+3} 73,${mY+9} 83,${mY+3} C80,${mY-6} 66,${mY-14} 50,${mY-9} Z"
+      fill="#7d6a4c" stroke="#2a1a0c" stroke-width="1.6"/>`;
+  } else if(k==='lb'){
+    hair=`<path d="M${50-F.rx-2},${F.cy-16} C${50-F.rx-6},${F.cy-46} ${50+F.rx+6},${F.cy-46}
+      ${50+F.rx+2},${F.cy-16} C${50+F.rx-8},${F.cy-33} ${50-F.rx+8},${F.cy-33} ${50-F.rx-2},${F.cy-16} Z" fill="#221812"/>`;
+    extra=`<path d="M40,${mY-8} C46,${mY-11} 54,${mY-11} 60,${mY-8} L58,${mY-3} C54,${mY-5} 46,${mY-5} 42,${mY-3} Z" fill="#221812"/>
+      <path d="M${50-F.rx+4},${F.cy+34} L${50+F.rx-4},${F.cy+34} L${50+F.rx-2},100 L${50-F.rx+2},100 Z" fill="#6d4f3a"/>`;
+  } else if(k==='op'){
+    hair=`<path d="M${50-F.rx-1},${F.cy-8} C${50-F.rx-5},${F.cy-30} ${50-F.rx+4},${F.cy-38}
+      ${50-F.rx+10},${F.cy-36} C${50-F.rx+2},${F.cy-28} ${50-F.rx+1},${F.cy-16} ${50-F.rx+4},${F.cy-4} Z" fill="#8d8578"/>
+      <path d="M${50+F.rx+1},${F.cy-8} C${50+F.rx+5},${F.cy-30} ${50+F.rx-4},${F.cy-38}
+      ${50+F.rx-10},${F.cy-36} C${50+F.rx-2},${F.cy-28} ${50+F.rx-1},${F.cy-16} ${50+F.rx-4},${F.cy-4} Z" fill="#8d8578"/>`;
+    gear=`<ellipse cx="36" cy="${eyeY}" rx="12" ry="10" fill="none" stroke="#3d3a34" stroke-width="2.6"/>
+      <ellipse cx="64" cy="${eyeY}" rx="12" ry="10" fill="none" stroke="#3d3a34" stroke-width="2.6"/>
+      <line x1="48" y1="${eyeY}" x2="52" y2="${eyeY}" stroke="#3d3a34" stroke-width="2.6"/>`;
+    extra=`<path d="M50,${mY-8} C42,${mY-11} 32,${mY-8} 29,${mY-3} C36,${mY} 44,${mY-3} 50,${mY-5}
+      C56,${mY-3} 64,${mY} 71,${mY-3} C68,${mY-8} 58,${mY-11} 50,${mY-8} Z" fill="#9a938a"/>
+      <path d="M32,${F.cy+38} L50,${F.cy+50} L68,${F.cy+38} L78,${F.cy+44} L78,100 L22,100 L22,${F.cy+44} Z"
+      fill="#f6f1e4" stroke="#3d3a34" stroke-width="1.6"/>
+      <path d="M50,${F.cy+50} L42,${F.cy+40} C46,${F.cy+37} 54,${F.cy+37} 58,${F.cy+40} Z" fill="#20242b"/>`;
+  } else if(k==='pr'){
+    hair=`<rect x="20" y="${F.cy-34}" width="60" height="15" rx="2" fill="#e6d3a0" stroke="#8a7440" stroke-width="1.6"/>
+      <rect x="20" y="${F.cy-27}" width="60" height="5" fill="#8a3426"/>
+      <ellipse cx="50" cy="${F.cy-19}" rx="40" ry="6" fill="#e6d3a0" stroke="#8a7440" stroke-width="1.6"/>`;
+    gear=`<circle cx="36" cy="${eyeY}" r="11" fill="none" stroke="#33302b" stroke-width="2.4"/>
+      <circle cx="64" cy="${eyeY}" r="11" fill="none" stroke="#33302b" stroke-width="2.4"/>
+      <line x1="47" y1="${eyeY}" x2="53" y2="${eyeY}" stroke="#33302b" stroke-width="2.4"/>`;
+    extra=`<path d="M36,${mY-8} C42,${mY-12} 58,${mY-12} 64,${mY-8} L62,${mY-3} C56,${mY-6} 44,${mY-6} 38,${mY-3} Z" fill="#4a3d2c"/>
+      <path d="M50,${F.cy+40} L40,${F.cy+34} L40,${F.cy+46} Z M50,${F.cy+40} L60,${F.cy+34} L60,${F.cy+46} Z" fill="#8a3426"/>`;
+  } else {
+    hair=`<path d="M${50-F.rx-2},${F.cy-6} C${50-F.rx-6},${F.cy-40} ${50+F.rx+6},${F.cy-40}
+      ${50+F.rx+2},${F.cy-6} C${50+F.rx-4},${F.cy-26} ${50-F.rx+4},${F.cy-26} ${50-F.rx-2},${F.cy-6} Z" fill="#5d4530"/>
+      <path d="M50,${F.cy-38} L50,${F.cy-24}" stroke="#3f2e1e" stroke-width="2"/>
+      <path d="M${50-F.rx-6},${F.cy-8} C${50-F.rx-14},${F.cy+26} ${50-F.rx-4},${F.cy+52} 50,${F.cy+56}
+      C${50+F.rx+4},${F.cy+52} ${50+F.rx+14},${F.cy+26} ${50+F.rx+6},${F.cy-8}
+      C${50+F.rx+2},${F.cy+14} ${50+F.rx-8},${F.cy+22} 50,${F.cy+24}
+      C${50-F.rx+8},${F.cy+22} ${50-F.rx-2},${F.cy+14} ${50-F.rx-6},${F.cy-8} Z"
+      fill="#9b5f4a" stroke="#5b3325" stroke-width="1.6"/>`;
+    extra=`<path d="M${50-F.rx+8},${F.cy+40} C${50-14},${F.cy+34} ${50+14},${F.cy+34} ${50+F.rx-8},${F.cy+40}
+      L${50+F.rx-4},100 L${50-F.rx+4},100 Z" fill="#9b5f4a"/>`;
+  }
+  return `<svg viewBox="0 0 100 100">
+   <ellipse cx="50" cy="${F.cy}" rx="${F.rx}" ry="${F.ry}" fill="${F.skin}"/>
+   <ellipse cx="${50-F.rx}" cy="${F.cy+4}" rx="5" ry="8" fill="${F.skin}"/>
+   <ellipse cx="${50+F.rx}" cy="${F.cy+4}" rx="5" ry="8" fill="${F.skin}"/>
+   ${hair}${brow}
+   <circle cx="36" cy="${eyeY}" r="4.4" fill="#1c1208"/><circle cx="64" cy="${eyeY}" r="4.4" fill="#1c1208"/>
+   ${gear}<ellipse cx="50" cy="${mY+4}" rx="13" ry="${open}" fill="#3b0f0b"/>${extra}</svg>`;
+}
+
+
+/* ═══ ACT II FIGURES & SCENES ═══ */
+function fig(o){
+  const d=o.dark||'#241f1a', s=o.s||1, hat=o.hat||'flat';
+  const cap = hat==='flat'?`<path d="M-7,-40 C-7,-46 7,-46 7,-40 L10.4,-38.6 L-7.6,-38.6 Z" fill="${d}"/>`
+   : hat==='round'?`<path d="M-6.6,-39.6 C-6.6,-47 6.6,-47 6.6,-39.6 Z" fill="${d}"/>
+      <rect x="-7" y="-40.2" width="14" height="2" fill="${d}"/>`
+   : hat==='shawl'?`<path d="M-9,-40 C-9,-50 9,-50 9,-40 C9,-30 6,-22 0,-20 C-6,-22 -9,-30 -9,-40 Z" fill="#7d4a3a"/>`
+   : hat==='kepi'?`<path d="M-7.4,-40 C-7.4,-47 7.4,-47 7.4,-40 Z" fill="#2f3a2c"/>
+      <rect x="-8.4" y="-40.6" width="16.8" height="2.4" fill="#1d241b"/>`
+   : hat==='none'?`<path d="M-6.6,-39.6 C-6.6,-46 6.6,-46 6.6,-39.6 Z" fill="#3a2c1c"/>` : '';
+  const bare = o.hats===false;
+  return `<g transform="translate(${o.x},${o.y}) scale(${s})" class="${o.cls||''}">
+   <rect x="-7" y="-11" width="5.6" height="11" fill="${d}"/>
+   <rect x="1.4" y="-11" width="5.6" height="11" fill="${d}"/>
+   <path d="M-7.6,-11 L-6.4,-31 L6.4,-31 L7.6,-11 Z" fill="${d}"/>
+   ${o.arms!=='up'?`<path d="M-6.4,-29 L-11,-13 L-8.4,-12 L-3.6,-26 Z" fill="${d}"/>
+     <path d="M6.4,-29 L11,-13 L8.4,-12 L3.6,-26 Z" fill="${d}"/>`
+    :`<path d="M-6.4,-29 L-12,-42 L-9.6,-44 L-3.6,-31 Z" fill="${d}"/>
+      <path d="M6.4,-29 L12,-42 L9.6,-44 L3.6,-31 Z" fill="${d}"/>`}
+   <circle cx="0" cy="-37" r="6" fill="${o.skin||'#c9ad8b'}" stroke="#14110e" stroke-width="1"/>
+   ${bare?'':cap}${o.extra||''}</g>`;
+}
+
+/* — relief line — */
+let QUEUE=[];(function(){for(let i=0;i<16;i++)QUEUE.push({i,x:78+i*33,
+ kind:i%3===0?'shawl':(i%3===1?'round':'flat'),s:.9+((i*7)%5)*.04});})();
+function scRelief(){
+  return wrap(`
+  <rect width="660" height="300" fill="url(#pg)"/>
+  <rect x="0" y="0" width="660" height="150" fill="url(#hl)" opacity=".35"/>
+  <path d="M18,150 L18,54 L250,54 L250,150 Z" fill="#e4d6b4" stroke="#14110e" stroke-width="3"/>
+  <path d="M6,58 L262,58 L250,40 L18,40 Z" fill="#3b2b1d" stroke="#14110e" stroke-width="2.5"/>
+  <rect x="40" y="76" width="188" height="26" fill="#f6efdb" stroke="#14110e" stroke-width="2"/>
+  <text x="134" y="95" text-anchor="middle" font-size="12" letter-spacing="2" fill="#7a3426">RELIEF STATION</text>
+  <rect x="40" y="118" width="188" height="32" fill="#241f1a"/>
+  <rect x="52" y="126" width="42" height="18" fill="#8d7355"/>
+  <rect x="102" y="126" width="42" height="18" fill="#8d7355"/>
+  <rect x="152" y="126" width="42" height="18" fill="#8d7355"/>
+  <line x1="0" y1="150" x2="660" y2="150" stroke="#14110e" stroke-width="3"/>
+  <rect x="0" y="150" width="660" height="150" fill="#cdbb96"/>
+  <g id="queue"></g>
+  <rect x="452" y="252" width="196" height="34" fill="#f2e8d3" stroke="#14110e" stroke-width="2"/>
+  <text id="fedTxt" x="550" y="274" text-anchor="middle" font-size="13" fill="#3a2f24">fed today: —</text>`);
+}
+function drawQueue(fed){
+  const g=document.getElementById('queue'); if(!g) return;
+  g.innerHTML=QUEUE.map(q=>{
+    const served=q.i<fed;
+    return fig({x:q.x,y:246,s:q.s,hat:q.kind,cls:served?'hold':'turn',
+      dark:q.kind==='shawl'?'#5c4436':'#2b2620',
+      extra:served?`<rect x="-4" y="-18" width="8" height="7" fill="#c9a86b" stroke="#14110e" stroke-width="1"/>`:''});
+  }).join('');
+  const t=document.getElementById('fedTxt');
+  if(t) t.textContent=`fed today: ${fed} of 16 families`;
+}
+
+/* — company store, credit closed — */
+function scStore(){
+  return wrap(`
+  <rect width="660" height="300" fill="url(#pg)"/>
+  <rect x="0" y="0" width="660" height="164" fill="url(#hl)" opacity=".3"/>
+  <path d="M96,164 L96,42 L560,42 L560,164 Z" fill="#e0d0ac" stroke="#14110e" stroke-width="3"/>
+  <path d="M80,46 L576,46 L560,22 L96,22 Z" fill="#3b2b1d" stroke="#14110e" stroke-width="2.5"/>
+  <rect x="150" y="62" width="356" height="30" fill="#f6efdb" stroke="#14110e" stroke-width="2"/>
+  <text x="328" y="84" text-anchor="middle" font-size="14" letter-spacing="3" fill="#3a2f24">
+   COMPANY STORE · No. 4</text>
+  <rect x="180" y="106" width="130" height="58" fill="#241f1a"/>
+  <rect x="350" y="106" width="130" height="58" fill="#241f1a"/>
+  <g transform="rotate(-6 328 132)">
+   <rect x="228" y="112" width="204" height="42" fill="#f6efdb" stroke="#8c1d15" stroke-width="3"/>
+   <text x="330" y="130" text-anchor="middle" font-size="14" letter-spacing="2" fill="#8c1d15">NO CREDIT</text>
+   <text x="330" y="147" text-anchor="middle" font-size="10" letter-spacing="1" fill="#5c3a1e">
+    until men return to work</text></g>
+  <line x1="0" y1="164" x2="660" y2="164" stroke="#14110e" stroke-width="3"/>
+  <rect x="0" y="164" width="660" height="136" fill="#cdbb96"/>
+  ${fig({x:130,y:250,s:1.05,hat:'flat',cls:'hold'})}
+  ${fig({x:196,y:254,s:1,hat:'shawl',dark:'#5c4436',cls:'hold'})}
+  ${fig({x:258,y:250,s:.94,hat:'round',cls:'hold'})}
+  ${fig({x:520,y:252,s:1,hat:'flat',cls:'hold'})}
+  <text x="330" y="292" text-anchor="middle" font-size="10.5" font-style="italic" fill="#3a2f24">
+   No violence. No speeches. Just a sign in a window, and it works better than either.</text>`);
+}
+
+/* — evictions and the mounted patrol — */
+function scEviction(){
+  const rainA=Array.from({length:34},(_,i)=>
+    `<line x1="${i*22-10}" y1="-10" x2="${i*22-52}" y2="310"/>`).join('');
+  const rainB=Array.from({length:22},(_,i)=>
+    `<line x1="${i*34+8}" y1="-10" x2="${i*34-38}" y2="310"/>`).join('');
+  const shanty=(x)=>`<g stroke="#14110e" stroke-width="2">
+    <polygon points="${x},152 ${x+32},108 ${x+64},152" fill="#3a3128"/>
+    <rect x="${x+5}" y="126" width="54" height="26" fill="#2e2820"/>
+    <rect x="${x+22}" y="132" width="16" height="20" fill="#14110e"/>
+    <rect x="${x+44}" y="98" width="7" height="16" fill="#241f1a"/></g>`;
+  return wrap(`
+  <rect width="660" height="300" fill="#b9b09a"/>
+  <rect x="0" y="0" width="660" height="152" fill="#a9a08a"/>
+  <rect x="0" y="0" width="660" height="152" fill="url(#hl)" opacity=".22"/>
+  <polygon points="30,152 74,52 132,32 176,52 216,152" fill="#4a4238"/>
+  <polygon points="176,84 300,152 258,152 156,84" fill="#3f382f"/>
+  ${shanty(300)}${shanty(392)}${shanty(484)}${shanty(576)}
+  <line x1="0" y1="152" x2="660" y2="152" stroke="#14110e" stroke-width="3"/>
+  <rect x="0" y="152" width="660" height="148" fill="#8d7f63"/>
+  <ellipse cx="200" cy="252" rx="86" ry="10" fill="#7a6d54"/>
+  <ellipse cx="470" cy="268" rx="104" ry="11" fill="#7a6d54"/>
+  <g class="rainA" stroke="#5a6570" stroke-width="1.5" opacity=".5">${rainA}</g>
+
+  <g class="shiver" transform="translate(64,168)">
+   <rect x="0" y="66" width="62" height="15" rx="2" fill="#6b5a44" stroke="#14110e" stroke-width="1.6"/>
+   <rect x="4" y="60" width="54" height="7" fill="#8d7a5c" stroke="#14110e" stroke-width="1.4"/>
+   <rect x="72" y="40" width="26" height="30" fill="#241f1a" stroke="#14110e" stroke-width="1.8"/>
+   <rect x="76" y="48" width="10" height="12" fill="#5c4a3a"/>
+   <line x1="85" y1="40" x2="85" y2="16" stroke="#241f1a" stroke-width="4"/>
+   <rect x="106" y="52" width="20" height="18" fill="#5a4a36" stroke="#14110e" stroke-width="1.5"/>
+   ${fig({x:24,y:56,s:1.08,hat:'shawl',dark:'#6b3f31',skin:'#d9b28a'})}
+   ${fig({x:44,y:58,s:.66,hat:'none',dark:'#4a3a2c',skin:'#dcb890'})}
+   <text x="52" y="96" text-anchor="middle" font-size="9.5" font-style="italic" fill="#3c3427">
+    put out on the road</text></g>
+
+  <g class="patrol">
+   <g transform="translate(150,196)" class="hoof">
+    <path d="M-52,0 L-48,-30 L-40,-46 L18,-50 L40,-44 L52,-58 L64,-74 L76,-70 L72,-52 L54,-34
+      L44,-14 L44,0 L34,0 L34,-16 L-14,-14 L-16,0 L-26,0 L-24,-16 L-42,-14 L-44,0 Z"
+      fill="#3a2b1e" stroke="#14110e" stroke-width="2.4"/>
+    <path d="M64,-74 L84,-78 L82,-70 L70,-66 Z" fill="#3a2b1e" stroke="#14110e" stroke-width="1.8"/>
+    <path d="M-48,-30 L-64,-16 L-60,-10 L-46,-22 Z" fill="#3a2b1e"/>
+    <rect x="-10" y="-56" width="30" height="14" rx="3" fill="#5c3f22" stroke="#14110e" stroke-width="1.6"/>
+    <g transform="translate(5,-56)">
+     <path d="M-8,0 L-7,-30 L9,-30 L10,0 Z" fill="#1e2a34" stroke="#14110e" stroke-width="1.8"/>
+     <path d="M-7,-28 L-14,-12 L-10,-10 L-4,-24 Z" fill="#1e2a34"/>
+     <circle cx="1" cy="-38" r="8" fill="#e6bd94" stroke="#14110e" stroke-width="1.5"/>
+     <path d="M-9,-42 C-9,-50 11,-50 11,-42 L15,-40.4 L-13,-40.4 Z" fill="#16202a"/>
+     <circle cx="1" cy="-42" r="2" fill="#c9a13a"/>
+     <line x1="-13" y1="-14" x2="16" y2="-40" stroke="#4a301a" stroke-width="3.2" stroke-linecap="round"/>
+     <line x1="10" y1="-34" x2="24" y2="-46" stroke="#20262c" stroke-width="2.4"/></g></g></g>
+
+  <g class="rainB" stroke="#6f7b86" stroke-width="1.2" opacity=".32">${rainB}</g>
+  <rect x="188" y="256" width="284" height="30" fill="#efe6cd" stroke="#14110e" stroke-width="2" opacity=".92"/>
+  <text x="330" y="276" text-anchor="middle" font-size="10.5" font-style="italic" fill="#3a2f24">
+   Commissioned by the state. Paid three dollars a day by the railroad.</text>`);
+}
+
+/* — Shenandoah, night — */
+function scRiot(){
+  return wrap(`
+  <rect width="660" height="300" fill="#14161c"/>
+  <rect x="0" y="0" width="660" height="300" fill="url(#hd)" opacity=".22"/>
+  <path d="M0,190 L0,66 L120,66 L120,190 Z" fill="#0d0f13" stroke="#2c3038" stroke-width="2"/>
+  <path d="M540,190 L540,52 L660,52 L660,190 Z" fill="#0d0f13" stroke="#2c3038" stroke-width="2"/>
+  <g fill="#c9a13a" opacity=".8"><rect x="24" y="92" width="20" height="26"/><rect x="70" y="92" width="20" height="26"/>
+   <rect x="574" y="80" width="20" height="26"/></g>
+  <rect x="0" y="190" width="660" height="110" fill="#1b1f26"/>
+  <line x1="0" y1="190" x2="660" y2="190" stroke="#333a44" stroke-width="3"/>
+  <g fill="#05070a">
+   ${[150,186,222,258,294].map((x,i)=>fig({x,y:262,s:1+((i%3)*.06),hat:i%2?'round':'flat',
+     dark:'#05070a',skin:'#3a3630',arms:i===2?'up':'dn'})).join('')}</g>
+  <g class="arc" fill="#6b6f78"><circle cx="300" cy="222" r="5"/></g>
+  <g fill="#0a0d12">
+   ${[430,470,510].map((x,i)=>fig({x,y:262,s:1.02,hat:'kepi',dark:'#0a0d12',skin:'#3a3630',
+     extra:`<rect x="7" y="-46" width="2.6" height="34" fill="#0a0d12"/>`})).join('')}</g>
+  <g class="flick"><circle cx="404" cy="222" r="15" fill="url(#lamp)"/>
+   <rect x="401" y="220" width="6" height="9" fill="#c9a13a"/></g>
+  <text x="330" y="288" text-anchor="middle" font-size="10.5" font-style="italic" fill="#8b93a0">
+   Shenandoah · July 30 · a deputy beaten, one man dead, the governor telegraphed by midnight</text>`);
+}
+
+/* — back room, the informer — */
+function scRoom(){
+  return wrap(`
+  <rect width="660" height="300" fill="#1d1a15"/>
+  <rect x="0" y="0" width="660" height="300" fill="url(#hd)" opacity=".18"/>
+  <ellipse cx="330" cy="126" rx="240" ry="118" fill="#4a4032" opacity=".55"/>
+  <path d="M120,300 L146,196 L514,196 L540,300 Z" fill="#3b2b1d" stroke="#14110e" stroke-width="3"/>
+  <rect x="146" y="188" width="368" height="12" fill="#5a4530" stroke="#14110e" stroke-width="2"/>
+  <g class="flick"><circle cx="330" cy="150" r="40" fill="url(#lamp)"/></g>
+  <rect x="320" y="150" width="20" height="30" fill="#c9a13a" stroke="#14110e" stroke-width="2"/>
+  <path d="M316,150 L344,150 L338,132 L322,132 Z" fill="#f0d99a" stroke="#14110e" stroke-width="1.6"/>
+  <rect x="184" y="168" width="54" height="22" fill="#e8dcc0" stroke="#14110e" stroke-width="1.6"/>
+  <rect x="418" y="170" width="46" height="20" fill="#e8dcc0" stroke="#14110e" stroke-width="1.6"/>
+  ${fig({x:206,y:196,s:1.1,hat:'flat',dark:'#2b2620',cls:'hold'})}
+  ${fig({x:452,y:196,s:1.05,hat:'round',dark:'#20201c',cls:'hold'})}
+  <g opacity=".35">${fig({x:330,y:196,s:1.08,hat:'none',dark:'#2b2620'})}</g>
+  <text x="330" y="286" text-anchor="middle" font-size="10.5" font-style="italic" fill="#a99878">
+   Somebody in this room is paid by the other side. You do not know which chair.</text>`);
+}
+
+/* — Guard encampment — */
+function scGuard(){
+  const tent=(x,s)=>`<g transform="translate(${x},196) scale(${s})">
+    <path d="M-34,0 L0,-46 L34,0 Z" fill="#d8cbaa" stroke="#14110e" stroke-width="2.4"/>
+    <path d="M-10,0 L0,-24 L10,0 Z" fill="#3a3226"/>
+    <line x1="0" y1="-46" x2="0" y2="-56" stroke="#14110e" stroke-width="2"/></g>`;
+  const stack=(x)=>`<g transform="translate(${x},198)">
+    <path d="M-11,0 L3,-34" stroke="#2b2620" stroke-width="2.4"/>
+    <path d="M11,0 L-3,-34" stroke="#2b2620" stroke-width="2.4"/>
+    <path d="M0,0 L0,-34" stroke="#2b2620" stroke-width="2.4"/></g>`;
+  return wrap(`
+  <rect width="660" height="300" fill="url(#pg)"/>
+  <rect x="0" y="0" width="660" height="150" fill="url(#hl)" opacity=".3"/>
+  <path d="M0,150 L140,80 L300,150 Z" fill="#241f1a"/>
+  <path d="M400,150 L400,58 L430,58 L430,34 L520,34 L520,150 Z" fill="#2c2722" stroke="#14110e" stroke-width="2.4"/>
+  <line x1="0" y1="150" x2="660" y2="150" stroke="#14110e" stroke-width="3"/>
+  <rect x="0" y="150" width="660" height="150" fill="#c6b48f"/>
+  ${tent(90,1)}${tent(196,1)}${tent(302,1)}${tent(408,1)}${tent(514,1)}${tent(614,1)}
+  ${stack(146)}${stack(252)}${stack(358)}${stack(464)}
+  <g class="pace">${fig({x:70,y:270,s:1.15,hat:'kepi',dark:'#2f3a2c',
+    extra:`<rect x="8" y="-52" width="3" height="40" fill="#2f3a2c"/>
+           <rect x="7" y="-56" width="5" height="7" fill="#8d949a"/>`})}</g>
+  <rect x="330" y="252" width="316" height="34" fill="#f2e8d3" stroke="#14110e" stroke-width="2"/>
+  <text x="488" y="274" text-anchor="middle" font-size="11.5" fill="#3a2f24">
+   The whole division. Roughly ten thousand men.</text>`);
+}
+
+/* — funeral procession — */
+function scFuneral(){
+  let line='';
+  const xs=[0,40,78,118,158,198,238,278,318,358,398,438,478,518];
+  xs.forEach((x,i)=>{ line+=fig({x:x+120,y:246,s:.94+((i*3)%4)*.03,
+    hat:i%4===0?'shawl':(i%3===0?'round':'flat'),
+    dark:i%4===0?'#3a2c26':'#1d1a17'}); });
+  return wrap(`
+  <rect width="660" height="300" fill="url(#pg)"/>
+  <rect x="0" y="0" width="660" height="152" fill="url(#hl)" opacity=".4"/>
+  <path d="M0,152 L110,86 L232,152 Z" fill="#241f1a"/>
+  <path d="M470,152 L470,72 L500,72 L500,48 L590,48 L590,152 Z" fill="#2c2722" stroke="#14110e" stroke-width="2.4"/>
+  <line x1="0" y1="152" x2="660" y2="152" stroke="#14110e" stroke-width="3"/>
+  <rect x="0" y="152" width="660" height="148" fill="#c6b48f"/>
+  <g class="march">
+   <g transform="translate(0,0)">
+    <rect x="-4" y="200" width="120" height="26" fill="#241f1a" stroke="#14110e" stroke-width="2.4"/>
+    <path d="M-4,200 L20,190 L96,190 L116,200 Z" fill="#3a332a" stroke="#14110e" stroke-width="2"/>
+    <rect x="44" y="186" width="24" height="5" fill="#8c7a52"/>
+    ${fig({x:6,y:250,s:1,hat:'flat',dark:'#1d1a17'})}
+    ${fig({x:48,y:250,s:1,hat:'flat',dark:'#1d1a17'})}
+    ${fig({x:92,y:250,s:1,hat:'flat',dark:'#1d1a17'})}
+   </g>
+   ${line}</g>
+  <text x="330" y="290" text-anchor="middle" font-size="10.5" font-style="italic" fill="#3a2f24">
+   A mile of men with their hats in their hands. Every newspaper in the East will photograph it.</text>`);
+}
+
+/* ═══ DEMANDS ═══ */
+const TERMS=[
+ {id:'w10',g:'wage',ask:2,t:'Ten per cent more pay',d:'A small raise. Easy to say yes to, easy to live without.',
+  cm:1,lb:1,pr:3,ho:3,
+  fl:'The back rows go quiet. Not angry. Just quiet.',
+  ou:'The papers will call it modest, and they will mean it kindly.'},
+ {id:'w20',g:'wage',ask:5,t:'Twenty per cent more pay',d:'What the men actually voted for in the districts.',
+  cm:2,lb:3,pr:0,ho:0,
+  fl:'That number they understand. Men are repeating it down the rows in four languages.',
+  ou:'Editors will argue about it. Households will do the arithmetic on their coal bill.'},
+ {id:'w50',g:'wage',ask:8,t:'Fifty per cent more pay',d:'Far past what anyone expects. It will be the headline.',
+  cm:3,lb:5,pr:-6,ho:-5,
+  fl:'The hall roars. Somebody is standing on a bench.',
+  ou:'Every paper in the East prints that number tomorrow, and every family reads it as the price of their winter.'},
+ {id:'scale',g:null,ask:4,t:'An honest scale',d:'A [[checkweighman]] the men pay themselves, so no boss can call your coal rock and go [[docking]] your pay.',
+  cm:4,lb:2,pr:2,ho:1,
+  fl:'The old hands nod once. That is the thing they have waited twenty years for.',
+  ou:'Hard to argue against an honest weight. Even the Philadelphia papers grant it.'},
+ {id:'h8',g:null,ask:3,t:'The eight-hour day',d:'Down from the ten and twelve hour shifts worked underground.',
+  cm:1,lb:2,pr:1,ho:0,
+  fl:'Approval, but no roar. Everyone knows hours are the first thing traded away.',
+  ou:'Reasonable, says the country, provided the coal still comes.'},
+ {id:'store',g:null,ask:3,t:'End the [[companystore|company store]]',d:'Men may buy their powder and food wherever they like.',
+  cm:1,lb:4,pr:0,ho:1,
+  fl:'The day men are on their feet. That store owns most of them by August.',
+  ou:'Outsiders barely understand this one. It costs you nothing with them.'},
+ {id:'back',g:null,ask:4,t:'Back pay for every docked car',d:'Repayment for coal the companies took and never paid for.',
+  cm:4,lb:2,pr:-4,ho:-3,
+  fl:'A hard cheer. Every man here can name the year he was robbed.',
+  ou:'It reads as revenge, and it means opening twenty years of books. The operators will never sit down for it.'},
+ {id:'rec',g:null,ask:5,t:'[[recognition|Recognition]] of the union',d:'The operators must deal with the United Mine Workers as the men\'s agent.',
+  cm:5,lb:5,pr:-7,ho:-4,
+  fl:'The hall comes out of its seats. Men are standing on the benches.',
+  ou:'This is the word the country hears as power, not bread. It is also the one thing the operators will never grant.'}
+];
+const picked=new Set(['w20','scale']);
+
+function scores(){
+  let cm=-1,lb=-1,pr=2,ho=2,ask=0;
+  TERMS.forEach(t=>{ if(picked.has(t.id)){cm+=t.cm;lb+=t.lb;pr+=t.pr;ho+=t.ho;ask+=t.ask;} });
+  if(!picked.has('scale')) cm-=7;
+  const wage=['w10','w20','w50'].find(w=>picked.has(w));
+  if(!wage) lb-=8; else if(wage==='w10') lb-=3;
+  // A strike costs a family six months of wages. The list has to be worth that.
+  const thin = ask < 9;
+  if(thin){ cm-=6; lb-=8; }
+  return {cm,lb,pr,ho,wage,ask,thin};
+}
+function askNote(ask){
+  return ask<9  ? ['thin','No family goes a winter without wages for this. They will not strike on it, and they will not forgive you for asking them to.']
+       : ask<16 ? ['fair','Worth a winter. Not big enough to be called greedy.']
+       : ask<23 ? ['heavy','A heavy list. Every paper in the East will print the length of it.']
+       :          ['huge','This is everything at once. Nobody outside the valley will read it as bread.'];
+}
+function crowdState(){
+  const sc=scores();
+  const hot = picked.has('rec')||picked.has('w50')||picked.has('back');
+  CROWD.forEach(p=>{
+    const el=document.getElementById('sp'+p.i); if(!el) return;
+    const mine = p.bloc==='cm'?sc.cm:sc.lb;
+    let st='sit';
+    if(mine<=-3) st = p.quirk<5?'leave':'sit';
+    else if(mine<=0) st = p.quirk<2?'leave':'sit';
+    else if(hot && mine>=6) st = p.quirk===6?'sit':'cheer';
+    else if(mine>=9) st = p.quirk<3?'cheer':'sit';
+    el.setAttribute('class', st==='cheer'?'sp cheer'
+      : st==='leave'?('sp '+(p.x<330?'leaveL':'leaveR')) : 'sp');
+  });
+}
+function drawTerms(){
+  const wageRows=TERMS.filter(t=>t.g==='wage'), rest=TERMS.filter(t=>!t.g);
+  const cell=t=>`<div class="tm ${picked.has(t.id)?'on':''}" data-id="${t.id}">
+    <div class="bx">${picked.has(t.id)?'✕':''}</div>
+    <div><b>${parse(t.t)}</b><i>${parse(t.d)}</i></div></div>`;
+  document.getElementById('terms').innerHTML=
+   `<div class="grp" style="grid-column:1/-1">Pay — choose one</div>${wageRows.map(cell).join('')}
+    <div class="grp" style="grid-column:1/-1">Everything else — choose any</div>${rest.map(cell).join('')}`;
+  document.querySelectorAll('.tm').forEach(el=>el.onclick=()=>{
+    const id=el.dataset.id, t=TERMS.find(x=>x.id===id);
+    if(picked.has(id)){ picked.delete(id); whisper(t,false); }
+    else{ if(t.g) TERMS.filter(x=>x.g===t.g).forEach(x=>picked.delete(x.id));
+          picked.add(id); whisper(t,true); }
+    drawTerms(); crowdState(); outFaces(); askBar(); askBar(); bindGloss();
+  });
+}
+function whisper(t,on){
+  const el=document.getElementById('wsp');
+  if(!el) return;
+  el.innerHTML = on
+   ? `<b>In the hall</b><p>${parse(t.fl)}</p><b>Outside</b><p>${parse(t.ou)}</p>`
+   : `<b>In the hall</b><p>You strike it off the list. ${parse(t.t)} is gone.</p>
+      <b>Outside</b><p>Nobody outside this room will ever know you considered it.</p>`;
+}
+function askBar(){
+  const el=document.getElementById('askline'); if(!el) return;
+  const sc=scores(), [kind,note]=askNote(sc.ask);
+  const pips=Math.min(10,Math.round(sc.ask/3));
+  el.className='ask '+kind;
+  el.innerHTML=`<b>Worth striking a winter for?</b>
+    <span class="bar">${'▮'.repeat(pips)}${'▯'.repeat(Math.max(0,10-pips))}</span>
+    <i>${note}</i>`;
+}
+function outFaces(){
+  const sc=scores();
+  const box=document.getElementById('wsf'); if(!box) return;
+  box.innerHTML=[['pr',sc.pr],['ho',sc.ho]].map(([k,v])=>
+   `<div class="wsface">${faceSvg(k,bandOf(v))}<span>${VOICE[k][0]}</span></div>`).join('');
+}
+
+function deliver(){
+  if(!picked.size){ whisper({t:'nothing',fl:'You cannot hand them a blank sheet.',ou:'—'},true); return; }
+  const sc=scores();
+  const rx={
+   cm:[bandMen(sc.cm), sc.thin?'"Six months without wages, for that? You could have got that by asking politely in March."'
+      : sc.cm<=-3?'"You left the scale off. They will steal every raise back at the weigh house by August."'
+      : sc.cm>=9?'"That is the man we elected. No more asking. Tell them what we are."'
+      : sc.cm>=3?'"The scale is on the paper. Fine. Now do not let them talk you off it."'
+      : '"It is thin, John. It is very thin."'],
+   lb:[bandMen(sc.lb), sc.thin?'"My children go hungry until Christmas and this is the paper you hand them? No."'
+      : sc.lb<=-3?'"You did not ask them for one cent we can live on. What do we eat?"'
+      : sc.lb>=9?'"He put our name on the paper. Nobody in this country has done that for us."'
+      : sc.lb>=3?'"Pay and an honest weight. It will feed people. We can stand on that."'
+      : '"We hear you. We are not cheering."'],
+   op:['COLD','"Mr. Baer has no comment on demands from persons with whom he has no relations."'],
+   pr:[bandOf(sc.pr), sc.pr<=-4?'"This is not a strike for bread. It is a demand for power over an industry."'
+      : sc.pr>=3?'"Reasonable men asking for reasonable things. We can print that."'
+      : '"We shall wait and see what the operators say."'],
+   ho:[bandOf(sc.ho), sc.ho<=-4?'"And who pays for all that? We do, in December, by the ton."'
+      : sc.ho>=3?'"An honest weight for an honest day. Nobody could object to that."'
+      : '"We only want to know whether there will be coal."']};
+  const fx={FIELD:Math.round((sc.cm+sc.lb)/3) + (sc.thin?-24:0),
+            COUNTRY:Math.round((sc.pr+sc.ho)*.9),
+            STANDING:Math.round(sc.pr*1.3)};
+  if(sc.thin) S.flags.THIN=true;
+  apply(fx,rx,"The real 1902 demands were twenty per cent, an eight-hour day, payment by weight instead of by the car, and recognition. The operators refused to receive them at all. Baer would not meet Mitchell for five months.");
+}
+
+/* ═══ RELIEF LEDGER ═══ */
+let BUDGET=12;
+const LINES=[
+ {id:'food',t:'Food',d:'Flour, beans, salt pork. The thing that decides whether a family can wait another week.',
+  cm:1,lb:3,pr:1,ho:1},
+ {id:'rent',t:'Rent for evicted families',d:'Most of these men rent from the company that fired them.',
+  cm:2,lb:2,pr:2,ho:1},
+ {id:'legal',t:'Lawyers for arrested men',d:'The [[coalandiron|Coal and Iron Police]] arrest on their own authority. Somebody has to answer it.',
+  cm:3,lb:1,pr:1,ho:0},
+ {id:'org',t:'Organizers in the field',d:'Men who ride between towns and keep the [[local|locals]] talking to each other.',
+  cm:2,lb:2,pr:0,ho:0},
+ {id:'bury',t:'Burial fund',d:'There will be funerals. There always are.',
+  cm:2,lb:2,pr:3,ho:2}];
+const alloc={food:5,rent:3,legal:1,org:3,bury:0};
+const spent=()=>Object.values(alloc).reduce((a,b)=>a+b,0);
+function fedCount(){ return Math.min(16, alloc.food*2 + alloc.rent); }
+function ledScores(){
+  let cm=0,lb=0,pr=0,ho=0;
+  LINES.forEach(l=>{const n=alloc[l.id];
+    cm+=n*l.cm*.42; lb+=n*l.lb*.42; pr+=n*l.pr*.42; ho+=n*l.ho*.42;});
+  if(alloc.food<=2){lb-=8;cm-=3;}
+  if(alloc.rent===0){cm-=4;lb-=4;pr-=2;}
+  if(alloc.legal===0){cm-=4;}
+  if(alloc.bury===0){pr-=3;ho-=2;}
+  if(alloc.org===0){}
+  return {cm:Math.round(cm-4),lb:Math.round(lb-4),pr:Math.round(pr-3),ho:Math.round(ho-3),
+          org:alloc.org};
+}
+function drawLedger(){
+  const box=document.getElementById('ledrows'); if(!box) return;
+  box.innerHTML=LINES.map(l=>`<div class="row">
+    <div class="nm"><b>${l.t}</b><i>${parse(l.d)}</i></div>
+    <div class="pips">${'●'.repeat(alloc[l.id])}${'·'.repeat(Math.max(0,5-alloc[l.id]))}</div>
+    <button onclick="bump('${l.id}',-1)" ${alloc[l.id]<=0?'disabled':''}>−</button>
+    <button onclick="bump('${l.id}',1)" ${spent()>=BUDGET||alloc[l.id]>=5?'disabled':''}>+</button>
+   </div>`).join('');
+  const left=BUDGET-spent();
+  document.getElementById('ledleft').textContent=left+' of '+BUDGET+' left';
+  const btn=document.getElementById('ledgo'); if(btn) btn.disabled = left>0;
+  drawQueue(fedCount());
+  const sc=ledScores();
+  const f=document.getElementById('wsf');
+  if(f) f.innerHTML=[['pr',sc.pr],['ho',sc.ho]].map(([k,v])=>
+    `<div class="wsface">${faceSvg(k,bandOf(v))}<span>${VOICE[k][0]}</span></div>`).join('');
+  const w=document.getElementById('wsp');
+  if(w){
+    const notes=[];
+    if(alloc.food<=2) notes.push('Families are being turned away from the line. Word of that travels faster than anything you say.');
+    if(alloc.rent===0) notes.push('Nobody is covering rent. Furniture is going out onto the road this week.');
+    if(alloc.legal===0) notes.push('Arrested men are sitting without a lawyer. The old hands are counting.');
+    if(alloc.bury===0) notes.push('No burial money. When somebody dies, and somebody will, you will be passing a hat.');
+    if(alloc.org===0) notes.push('No organizers riding out. The far locals stop hearing from you at all.');
+    if(!notes.length) notes.push('Thin everywhere, but nothing is at zero. That is the best week you will have.');
+    w.innerHTML=`<b>What this buys</b><p>${parse(notes.join(' '))}</p>
+      <b>Fed today</b><p>${fedCount()} of 16 families at the station.</p>`;
+  }
+}
+function bump(id,d){
+  const n=alloc[id]+d;
+  if(n<0||n>5) return;
+  if(d>0 && spent()>=BUDGET) return;
+  alloc[id]=n; drawLedger(); bindGloss();
+}
+function deliverLedger(){
+  const sc=ledScores();
+  const rx={
+   cm:[bandOf(sc.cm), sc.cm<=-3?'"You left the arrested men to the county and the widows to a hat. We noticed."'
+     : sc.cm>=6?'"He is running it like a man who intends to still be here in November."'
+     : '"It will do for a week. Ask me again in a week."'],
+   lb:[bandOf(sc.lb), sc.lb<=-3?'"There is no flour. My wife stood in that line for two hours and came home with nothing."'
+     : sc.lb>=6?'"Nobody in this country has fed us before. He does it without being asked twice."'
+     : '"We are eating. Barely. We are eating."'],
+   op:['COLD','"Their relief fund cannot outlast our credit book. We need do nothing at all."'],
+   pr:[bandOf(sc.pr), sc.pr<=-3?'"Disorder in the relief lines. The union cannot manage its own charity."'
+     : sc.pr>=5?'"Whatever one thinks of the strike, the relief is being run soberly."'
+     : '"The union claims its families are provided for."'],
+   ho:[bandOf(sc.ho), sc.ho<=-3?'"Hungry men do desperate things and we are the ones who live near them."'
+     : '"So long as it stays quiet up there."']};
+  const fx={FIELD:Math.round((sc.cm+sc.lb)/4)+ (sc.org>=3?2:0),
+            COUNTRY:Math.round((sc.pr+sc.ho)/2),
+            STANDING:Math.round(sc.pr*.8), FUND:-3};
+  apply(fx,rx,"Relief was funded almost entirely by working bituminous miners in other states, who were assessed a share of their own wages. It never covered everything, and Mitchell spent much of the summer deciding what to leave out.");
+}
+
+/* ═══ BEATS ═══ Act I then Act II, one array, each beat tagged with its act */
+const BEATS=[
+{act:1,scene:'chain',tag:'Before the strike',who:'How it works',pre:true,coal:8,
+ text:"Coal powers America. Miners power coal.\n\nEverything in the country that moves or gets warm burns it. Factories, locomotives, ships, and — for [[anthracite|hard coal]] — the stove in every house between Boston and Baltimore.\n\nMen cut it out of the ground. It rides the railroad east. It ends up in somebody's cellar. That is the whole machine, and it has never once stopped.\n\n**Watch the bar above.** Twelve men at work, coal moving down the line, eight houses warm. Remember what it looks like when it is running.",
+ type:'go'},
+{act:1,scene:'walkout',tag:'May 12, 1902',who:'Why they are out',coal:8,
+ text:"They are walking out because a man is paid by the [[ton]] and the company decides what a ton is. Because a boss can look at your coal car, call half of it rock, and take the money — and you cannot argue. Because you buy your own powder at their store, at their price, and live in their house.\n\nBecause about four hundred men a year do not come back up.\n\n147,000 of them stop work today. You are **John Mitchell**, thirty-two, president of the [[union]]. Nobody has ever won a strike this size.",
+ type:'go'},
+{act:1,scene:'hall',tag:'Shamokin, May 14',who:'What you are asking for',coal:8,
+ text:"Delegates from every district. You have to write down what this strike is *for.*\n\nEvery line you add makes somebody in this hall and costs you somebody outside it. **Watch the floor and watch the two faces.** Ask for too little and your own men walk out of the room. Ask for too much and the country decides you are not worth freezing for.",
+ type:'builder'},
+{act:1,scene:'rail',tag:'The money',who:'The soft coal men',coal:8,
+ text:"Three hundred thousand [[bituminous|soft coal]] miners in Ohio and Illinois are still working. They are under contract and you told them to keep it. Part of their pay comes east to feed your families.\n\nWithout them your strike lasts three weeks.\n\nYour men stand at the crossings and watch those trains roll by full.\n\n*\"Whose president are you, John?\"*",
+ type:'go',drain:1},
+{act:1,scene:'pump',tag:'June, the pumps',who:'Underground',coal:7,
+ text:"Water pushes up into these mines every hour of every day. It collects in the [[sump]] and creeps up to the men's boots. The steam pump lifts it out. Then it starts again. That cycle never stops, strike or no strike.\n\nThe pump men are union men, and they are waiting on your word.",
+ type:'choice',
+ record:"Mitchell ordered the pump men to stay. In June some walked out anyway, over his head, and several mines flooded. He got no credit from the operators for the order and no forgiveness from the men for giving it.",
+ opts:[
+  {l:'The pump men stay at their posts.',
+   why:['Keep the mines dry and the jobs still exist when this ends. The country notices a union that does not wreck things — and the only door out of this strike is Washington.',
+        "But you have ordered starving men to protect the property of the company starving them. Baer gets his mines kept dry for free."],
+   fx:{FIELD:-15,COUNTRY:9,STANDING:13},flag:'PUMPS_HELD',
+   rx:{cm:['FURIOUS','"We go hungry so their water stays down. You come tell my wife that yourself."'],
+       lb:['FURIOUS','"Every man underground knows what you just did. Not one of us forgets it."'],
+       op:['COLD','"Mr. Mitchell has protected our property. He will get nothing whatever for it."'],
+       pr:['GRUDGING','"Whatever else the man is, he is not a wrecker. That is worth a column."'],
+       ho:['GRUDGING','"At least somebody down there is thinking past Tuesday."']}},
+  {l:'The pump men come out with everybody else.',
+   why:['A drowned mine is the only thing that costs the operators real money, and money is the only argument they have ever answered. It is also simply what a strike is: men withdrawing their labor.',
+        'But those mines are the jobs. Some will never reopen. And the country will not hear "withdrawing labor" — it will hear that you drowned the fuel supply in June.'],
+   fx:{FIELD:17,MINES:-24,COUNTRY:-13,STANDING:-16},flag:'PUMPS_PULLED',
+   rx:{cm:['CHEERING','"Now it costs them something. It is the only language that firm reads."'],
+       lb:['CHEERING','"Let the water have it. They have taken enough out of us."'],
+       op:['COLD','"The workings are drowning. We shall be using the word anarchy by Friday."'],
+       pr:['FURIOUS','"They are ruining the nation\'s fuel three months before winter."'],
+       ho:['FURIOUS','"Whatever was done to them, my children still have to be warm in January."']}}]},
+{act:1,scene:'walkout',tag:'End of June',who:'End of Act One',coal:7,
+ text:"The fields go quiet. The company stores close their credit. The Coal and Iron Police pin on their badges and the first families are put out on the road.\n\nSix weeks. Nobody has moved an inch.",
+ type:'end',drain:1},
+
+{act:2,scene:'store',tag:'July',who:'The credit book',coal:7,
+ text:"No speeches. No violence. The company simply closes the credit book at the [[companystore|store]] and puts a sign in the window.\n\nMost of these families have bought food on credit since the day they arrived. Now they cannot. There is nobody to shout at and nothing to picket, because nothing has technically happened.\n\nThis is the most effective weapon used against you all summer, and you cannot answer it with a speech.",
+ type:'go'},
+
+{act:2,scene:'eviction',tag:'Mid-July',who:'Out on the road',coal:6,
+ text:"The houses belong to the companies. So do the deputies.\n\nThe [[coalandiron|Coal and Iron Police]] are commissioned by the state and paid three dollars a day by the railroads. They ride through the patch towns, carry the furniture out into the mud, and nail the door shut behind it.\n\nFamilies are living along the railroad embankment. In Hazleton young men have started sitting up all night on their own porches with whatever is in the house.\n\nThey want to know what you are going to do about it.",
+ type:'choice',
+ record:"Evictions from company housing were the operators' most effective pressure after the credit book. The union did rent land and put up tent colonies in several districts, paid for out of relief money that would otherwise have bought food. Mitchell asked constantly for restraint and was constantly told he was asking the wrong people.",
+ opts:[
+  {l:'Rent land and put up [[tentcolony|tent colonies]]. Ask everyone publicly to keep the peace.',
+   why:['Nobody sleeps on an embankment, and a photograph of families under canvas in the rain does more damage to Baer than any speech you could give.',
+        'Canvas and rent come out of the same money as flour, so you will be feeding fewer people next week. And the men on those porches hear "keep the peace" as "do nothing."'],
+   fx:{FUND:-2,COUNTRY:11,STANDING:12,FIELD:-5},flag:'TENTS',
+   rx:{cm:['GRUDGING','"It is somewhere to put them. It is not nothing."'],
+       lb:['ANGRY','"They carry my mother\'s stove into the road and he answers with canvas and a sermon."'],
+       op:['COLD','"Let them live under sailcloth. October will do our arguing."'],
+       pr:['CHEERING','"The pictures from Hazleton this week are the most damning thing printed all summer."'],
+       ho:['GRUDGING','"Whatever one thinks of the strike, that is a hard way to treat a family."']}},
+  {l:'Spend nothing extra. Every dollar stays in the food fund.',
+   why:['You cannot eat a tent. The fund is the only clock that matters and stretching it is the only thing keeping this strike alive into the autumn.',
+        'The families put out this week have nowhere at all to go, and everyone can see that you decided that.'],
+   fx:{FUND:1,FIELD:-11,COUNTRY:-4,STANDING:-3},
+   rx:{cm:['ANGRY','"So they sleep by the tracks. We are told to be practical about it."'],
+       lb:['FURIOUS','"He is counting the money while my children sleep on stone."'],
+       op:['COLD','"Their own president has done our work. Continue the evictions."'],
+       pr:['COLD','"The union says its resources are committed elsewhere."'],
+       ho:['COLD','"Not our business where they sleep. We want to know about the coal."']}},
+  {l:'Say nothing. Let each town handle its own evictions as it sees fit.',
+   why:['The men on those porches are defending their own homes and it is not your place to order them off. Whatever happens, you did not order it.',
+        'Whatever happens, you did not stop it either. And the first porch that turns into a gunfight will be reported as a policy of yours.'],
+   fx:{FIELD:8,COUNTRY:-13,STANDING:-15},flag:'LET_IT_RIDE',
+   rx:{cm:['GRUDGING','"A man has a right to stand on his own step. He did not take that away."'],
+       lb:['CHEERING','"He did not tell us to move. That is the first time anyone up there has not."'],
+       op:['COLD','"The union declines to restrain its members. Say so to every editor in Philadelphia."'],
+       pr:['FURIOUS','"Mitchell will not condemn armed resistance to lawful officers."'],
+       ho:['ANGRY','"There are men with guns on porches up there and nobody in charge of them."']}}]},
+
+{act:2,scene:'relief',tag:'The relief fund',who:'What you can pay for',coal:6,
+ text:"Soft coal miners in other states are taxing their own wages to feed your families. Twelve shares came in this week. Five things need paying for.\n\nYou cannot fund all five. Watch the line at the station as you decide.",
+ note:'**Two shares are already gone on canvas and ground rent for the tent colonies. You have ten.**',
+ type:'ledger'},
+
+{act:2,scene:'riot',tag:'Shenandoah, July 30',who:'The night it turned',coal:5,
+ text:"A crowd goes after a deputy in Shenandoah. His brother comes to help him and is beaten nearly to death. Before morning one man is dead and Governor Stone has been telegraphed.\n\nBy noon every paper in the East has the story, and it is not the story of the credit book.\n\nWhat do you say?",
+ type:'choice',
+ record:"The Shenandoah riot of July 30 brought in the Guard. Mitchell condemned violence publicly and often, and it is a large part of why Roosevelt eventually treated him as the reasonable party. His own men never entirely forgave the tone of it.",
+ opts:[
+  {l:'Condemn it publicly and by name.',
+   why:['The country is watching to see whether this is a union or a mob, and only one answer keeps Washington available to you in October.',
+        'Those were neighbours, everyone knows how it started, and you are about to sound exactly like the operators.'],
+   fx:{FIELD:-9,COUNTRY:14,STANDING:16,SPLIT:-8},flag:'REPUDIATED',
+   rx:{cm:['ANGRY','"You could have said one word about who started it. One."'],
+       lb:['FURIOUS','"Our men. Our town. And he read it out like a magistrate."'],
+       op:['COLD','"Mr. Mitchell condemns the violence of his own members. Note it and give him nothing."'],
+       pr:['CHEERING','"Mitchell speaks like a citizen, not an agitator. We said so on page one."'],
+       ho:['GRUDGING','"Somebody up there is at least trying to keep order."']}},
+  {l:'Explain the provocation. Defend the men.',
+   why:['They are your people, they were pushed first, and if you will not say so nobody in this country ever will.',
+        'The operators have been waiting all summer for you to sound like this. The Molly Maguire stories will be in print inside a week.'],
+   fx:{FIELD:11,COUNTRY:-18,STANDING:-20,SPLIT:6},flag:'DEFENDED',
+   rx:{cm:['GRUDGING','"He stood up for them. That is worth something, whatever it costs."'],
+       lb:['CHEERING','"He did not hand us over. Remember that in December."'],
+       op:['COLD','"He excuses assault. We shall print the word Molly Maguire in every paper we own."'],
+       pr:['FURIOUS','"The head of the union defends a mob that killed a man."'],
+       ho:['FURIOUS','"They are not asking for bread up there any more."']}},
+  {l:'Say nothing at all.',
+   why:['Anything you say becomes the headline. Silence lets the story die in three days.',
+        'It will not die. The papers will write your answer for you, and it will be worse than anything you would have said.'],
+   fx:{FIELD:-4,COUNTRY:-9,STANDING:-11},
+   rx:{cm:['ANGRY','"He said nothing. For us or against us. Nothing."'],
+       lb:['ANGRY','"Silence is cheap and we noticed which one he gave us."'],
+       op:['COLD','"The union declines to condemn violence. Print that sentence exactly."'],
+       pr:['ANGRY','"Asked four times, Mr. Mitchell had no comment on the death of a man."'],
+       ho:['ANGRY','"Nobody up there is in charge of anything."']}}]},
+
+{act:2,scene:'room',tag:'August',who:'Somebody is talking',coal:4,
+ text:"You said something in a closed executive session on Tuesday. It was in a Philadelphia paper on Thursday, in your own words.\n\nThere is a [[pinkerton|company man]] on your board. You do not know which chair he sits in, and every guess you make will land on somebody's [[local]], and on somebody's countrymen.",
+ type:'choice',
+ record:"Company detectives inside union locals were routine, not rare. The operators paid for transcripts of meetings all summer. Nobody was ever certain who the Shenandoah leak was.",
+ opts:[
+  {l:'Investigate the Hazleton local.',
+   why:['That is where the leak most plausibly came from, and an organization that cannot police itself will not survive the winter.',
+        'Hazleton is the Slavic and Lithuanian local. Every man in it will understand exactly what it means that you looked there first.'],
+   fx:{FIELD:-6,SPLIT:-16,STANDING:-4},flag:'ACCUSED_LB',
+   rx:{cm:['GRUDGING','"Somebody had to look. Better him than the operators doing it for us."'],
+       lb:['FURIOUS','"Of course it is us. It is always us. Six years I have paid dues to this union."'],
+       op:['COLD','"They are searching each other. Excellent. Continue."'],
+       pr:['COLD','"The union is said to be investigating its own membership."'],
+       ho:['COLD','"None of our business, so long as the coal moves."']}},
+  {l:'Investigate the Scranton local.',
+   why:['That is where the room was, and the old hands can take a question without believing it is about their blood.',
+        'These are the men who elected you. Turning on the district that built this union has a cost too.'],
+   fx:{FIELD:-7,SPLIT:11,STANDING:-4},flag:'ACCUSED_CM',
+   rx:{cm:['ANGRY','"Thirty years in this union and he sends men to ask questions about me."'],
+       lb:['GRUDGING','"He looked at his own first. That is not nothing."'],
+       op:['COLD','"They are searching each other. Excellent. Continue."'],
+       pr:['COLD','"The union is said to be investigating its own membership."'],
+       ho:['COLD','"None of our business."']}},
+  {l:'Accuse nobody. Stop discussing anything that matters in a meeting.',
+   why:['The leak stops the day you stop feeding it, and no man in this union gets accused of something you cannot prove.',
+        'You have just made your own organization slower, quieter and blinder, in the month you can least afford it.'],
+   fx:{FIELD:-11,STANDING:6},flag:'WENT_QUIET',
+   rx:{cm:['GRUDGING','"He would not name a man without proof. I can live with the rest of it."'],
+       lb:['GRUDGING','"He did not come looking for us. That is worth more than he knows."'],
+       op:['COLD','"Our source reports the meetings have gone empty. Unfortunate. It changes nothing."'],
+       pr:['COLD','"The union declines to comment on reports of an informer."'],
+       ho:['COLD','"None of our business."']}}]},
+
+{act:2,scene:'guard',tag:'September',who:'The Guard',coal:3,
+ text:"Governor Stone sends the whole Pennsylvania division into the fields. Roughly ten thousand soldiers, camped on the culm banks and drilling in the streets your men live on.\n\nNobody is shot. That is not the point of them. The point is that from today, every gathering of more than a few men happens in front of a rifle.\n\nThe strike does not break. It simply gets quieter, and the quiet costs you something you cannot get back.",
+ type:'go',drain:2},
+
+{act:2,scene:'funeral',tag:'Late September',who:'The funeral',coal:2,
+ text:"A striker named Kowalski is shot dead near a colliery gate at Duryea. The circumstances are disputed and always will be.\n\nHis family will bury him either way. What you decide is whether the country watches.",
+ type:'choice',
+ record:"Funerals were among the most effective public events of the strike. They were also exactly the kind of spectacle that convinced hostile editors the anthracite region was ungovernable.",
+ opts:[
+  {l:'A quiet burial. Family only.',
+   why:['You do not spend a dead man to move a meter, and a small funeral gives the operators nothing to photograph.',
+        'His local wanted the whole district there. You have told a grieving town that their man was not worth a procession.'],
+   fx:{FIELD:-8,STANDING:7,COUNTRY:3},
+   rx:{cm:['ANGRY','"We bury our own properly. That is not a thing you decide from Indianapolis."'],
+       lb:['ANGRY','"He was ours. We wanted to carry him and he would not let us."'],
+       op:['COLD','"Sensible of him. It changes nothing."'],
+       pr:['GRUDGING','"The union handled the death with restraint."'],
+       ho:['GRUDGING','"A decent enough thing to do."']}},
+  {l:'A full procession. The whole district walks.',
+   why:['A mile of men with their hats in their hands is the truest picture of this strike anybody will ever take, and it costs you nothing to tell the truth.',
+        'Ten thousand soldiers are camped three miles away, and every hostile editor in the East will describe it as a demonstration rather than a funeral.'],
+   fx:{FIELD:13,COUNTRY:-6,STANDING:-5},flag:'PROCESSION',
+   rx:{cm:['CHEERING','"Every man in the valley walked. They will not forget who was buried like that."'],
+       lb:['CHEERING','"They carried him a mile. Our man. A mile."'],
+       op:['COLD','"A demonstration dressed as a funeral. We shall describe it accurately."'],
+       pr:['ANGRY','"Thousands massed within sight of the militia. This is not mourning, it is display."'],
+       ho:['COLD','"It is October in three weeks and there is no coal."']}}]},
+
+{act:2,scene:'store',tag:'End of September',who:'End of Act Two',coal:1,
+ text:"Nineteen weeks. The credit book is still shut. The Guard is still camped on the culm banks. Baer has not said your name once, in public or in private, since May.\n\nAnd in the cities the price of a ton of coal has started to climb in a way it has never climbed before.\n\nThat, and nothing you did, is what is about to save you.",
+ type:'end',drain:2}
+];
+
+/* ═══ ENGINE ═══ (Act I's, extended to dispatch Act II's scenes, ledger and SPLIT) */
+let bi=0;
+const art=document.getElementById('art'),sayEl=document.getElementById('say'),
+ uiEl=document.getElementById('ui'),whoEl=document.getElementById('who'),
+ statEl=document.getElementById('stat'),tagEl=document.getElementById('actTag'),
+ ovl=document.getElementById('ovl'),cardsEl=document.getElementById('cards'),
+ recEl=document.getElementById('record'),defEl=document.getElementById('def');
+
+const ROMAN={1:'Act I',2:'Act II'};
+const SCENES={chain:scChain,walkout:scWalkout,hall:scHall,rail:scRail,
+ store:scStore,eviction:scEviction,relief:scRelief,riot:scRiot,room:scRoom,
+ guard:scGuard,funeral:scFuneral};
+function draw(scene,x){
+  art.innerHTML = scene==='pump' ? scPump(!!x)
+    : scene==='paper' ? scPaper(x.h,x.d)
+    : SCENES[scene]();
+  if(scene==='hall') crowdState();
+  if(scene==='relief') drawQueue(fedCount());
+}
+function bindGloss(){
+  document.querySelectorAll('.gl').forEach(el=>el.onclick=e=>{
+    e.stopPropagation();
+    const k=el.dataset.k, nm=GLOSS_NAME[k]||k;
+    defEl.innerHTML=`<b>${nm}</b><br>${GLOSS[k]||''}`; defEl.style.display='block';});
+}
+function show(){
+  const b=BEATS[bi];
+  if(b.drain) S.FUND=Math.max(0,S.FUND-b.drain);
+  if(b.coal!==undefined) S.COAL=b.coal;
+  S.PRE = !!b.pre;
+  draw(b.scene,false);
+  tagEl.textContent=ROMAN[b.act]+' · '+b.tag;
+  whoEl.textContent=b.who;
+  const inAct=BEATS.filter(x=>x.act===b.act);
+  statEl.textContent='Beat '+(inAct.indexOf(b)+1)+' / '+inAct.length;
+  sayEl.innerHTML=md(b.text + (b.note && S.flags.TENTS ? '\n\n'+b.note : ''));
+  defEl.style.display='none'; hud();
+  if(b.type==='builder'){
+    uiEl.innerHTML=`<div class="terms" id="terms"></div>
+     <div id="askline"></div>
+     <div class="wsbox"><div class="wstext" id="wsp"><b>Floor whispers</b>
+       <p>Every line you add makes a friend in this hall and costs you one outside it.</p></div>
+      <div class="wsfaces" id="wsf"></div></div>
+     <button class="go" style="margin-top:9px" onclick="deliver()">Deliver the demands →</button>`;
+    drawTerms(); crowdState(); outFaces();
+  } else if(b.type==='ledger'){
+    BUDGET = 12 - (S.flags.TENTS?2:0);
+    while(spent()>BUDGET){
+      const big=LINES.map(l=>l.id).sort((a,b2)=>alloc[b2]-alloc[a])[0];
+      alloc[big]=Math.max(0,alloc[big]-1);
+    }
+    uiEl.innerHTML=`<div class="led"><div class="ledhead"><b>Relief ledger · this week</b>
+      <span id="ledleft"></span></div><div id="ledrows"></div></div>
+     <div class="wsbox"><div class="wstext" id="wsp"></div><div class="wsfaces" id="wsf"></div></div>
+     <button class="go" id="ledgo" style="margin-top:9px" onclick="deliverLedger()">Pay it out →</button>`;
+    drawLedger();
+  } else if(b.type==='choice'){
+    uiEl.innerHTML=b.opts.map((o,i)=>`<button class="btn" onclick="choose(${i})"><b>${parse(o.l)}</b>
+      <i class="pro">Why you should — ${o.why[0]}</i>
+      <i class="con" style="margin-top:4px">Why you should not — ${o.why[1]}</i></button>`).join('');
+  } else if(b.type==='end'){
+    uiEl.innerHTML=`<button class="go" onclick="finish()">Read the paper →</button>`;
+  } else {
+    uiEl.innerHTML=`<button class="go" onclick="advance()">Continue →</button>`;
+  }
+  bindGloss();
+}
+function choose(i){
+  const o=BEATS[bi].opts[i];
+  if(o.flag) S.flags[o.flag]=true;
+  if(o.flag==='PUMPS_PULLED') draw('pump',true);
+  setTimeout(()=>apply(o.fx,o.rx,BEATS[bi].record), o.flag==='PUMPS_PULLED'?2800:120);
+}
+function apply(fx,rx,record){
+  prev={...S};
+  for(const k in fx){
+    if(k==='SPLIT') S.SPLIT=Math.max(-50,Math.min(50,S.SPLIT+fx[k]));
+    else S[k]=Math.max(0,Math.min(k==='FIELD'?90:100,S[k]+fx[k]));
+  }
+  for(const k in rx){
+    if(k==='op'){ S.mood.op='COLD'; continue; }
+    S.rel[k]=Math.max(-20,Math.min(20,S.rel[k]+REL_D[rx[k][0]]));
+    S.mood[k]=relBand(S.rel[k]);
+  }
+  S.warms+=['cm','lb'].filter(k=>rx[k]&&rx[k][0]==='CHEERING').length;
+  hud();
+  const ord=ORDER.slice().sort((a,b)=>BAND[rx[a][0]].r-BAND[rx[b][0]].r);
+  cardsEl.innerHTML=ord.map(k=>{
+    const band=rx[k][0], hot=(band==='FURIOUS'||band==='ANGRY');
+    return `<div class="card f-${band}"><div class="fc ${hot?'yell':''}">${faceSvg(k,band)}</div>
+     <div class="bd"><div class="rw"><span class="nm">${VOICE[k][0]} — ${VOICE[k][1]}</span>
+      <span class="bnd">${BAND[band].e} ${BAND[band].t.toUpperCase()}</span></div>
+      <q>${rx[k][1]}</q></div></div>`;}).join('');
+  recEl.innerHTML=record?`<b>The record</b><br>${record}`:'';
+  ovl.style.display='block'; ovl.scrollTop=0;
+}
+function dismiss(){ ovl.style.display='none'; advance(); }
+function advance(){ bi=Math.min(bi+1,BEATS.length-1); show(); }
+
+/* ═══ ACT BREAK ═══ */
+const ACT2=BEATS.findIndex(b=>b.act===2);
+function beginActTwo(){ S.warms0=S.warms; bi=ACT2; show(); }
+function finish(){ BEATS[bi].act===2 ? finishActTwo() : finishActOne(); }
+
+function finishActOne(){
+  let h,d,n,over=false;
+  // over:true = the strike is finished. Those endings end the game; they do not
+  // hand you a summer you no longer have any men for.
+  if(S.flags.THIN && S.FIELD<52){h='NOT WORTH A WINTER';d='Districts vote to return on the operators\' terms';
+   over=true;
+   n="They went out for a raise they could have negotiated in March, and by the fourth week the arithmetic caught up with every kitchen in the valley.\n\nNobody betrayed you. They simply added it up.\n\n**Ending — the demands were too small.** A strike is not free. The men pay for it in advance, and the list has to be worth what it costs them.";}
+  else if(S.FIELD<32){h='THE MEN GO BACK';d='Strike breaks in its sixth week';
+   over=true;
+   n="The line went before the summer did. Men returned in ones and twos and the owners took back only the ones they wanted.\n\n**Ending — the short strike.** The real strike held 163 days. This is what happened to almost every other strike of the era.";}
+  else if(S.COUNTRY<25){h='THE COUNTRY TURNS';d='Editors call for troops in the coal fields';
+   n="You kept your own men. You lost everybody else.\n\nWith the country against you there is no conference in October, because no president spends himself on a cause the public has already convicted.\n\n**Act One ends badly.**";}
+  else if(S.warms>=4){h='MITCHELL CHEERED BY HIS OWN';d='Operators reprint his speeches in full';
+   prev={...S};S.COUNTRY=Math.max(0,S.COUNTRY-15);S.STANDING=Math.max(0,S.STANDING-13);
+   n="Everything you said this spring brought the hall to its feet.\n\nThe operators have printed all of it in a pamphlet, unedited, and mailed it to every newspaper east of Chicago. They did not need to change one word.\n\n**Act One ends.** The week you thought was your best was not.";}
+  else if(S.flags.PUMPS_PULLED){h='WATER RISING IN THE WORKINGS';d='Eleven collieries below the second level';
+   n="For the first time since May the owners are losing money.\n\nSo are the men. They do not know it yet.\n\n**Act One ends.**";}
+  else {h='NO END IN SIGHT';d='Both sides settle in for the summer';
+   n="You have won nothing.\n\nYou have lasted six weeks, which is longer than most.\n\n**Act One ends.**";}
+  draw('paper',{h,d}); hud();
+  whoEl.textContent='The Scranton Republican';
+  statEl.textContent = over?'The strike is over':'End of Act I';
+  sayEl.innerHTML=md(n); defEl.style.display='none';
+  uiEl.innerHTML = over
+    ? `<button class="go" onclick="location.reload()">Play again ↻</button>`
+    : `<button class="go" onclick="beginActTwo()">Begin Act II · The long summer →</button>`;
+}
+
+function finishActTwo(){
+  let h,d,n;
+  const warms=S.warms-S.warms0;
+  if(S.FUND<=0){h='RELIEF FUND EXHAUSTED';d='Union announces no payments this week';
+   n="There is no money. The line at the station forms anyway, out of habit, and then goes home.\n\n**Ending — the fund runs dry.** Men drift back through October in ones and twos. No award, no terms, no union.\n\n*This is what happened to most strikes of the era.*";}
+  else if(S.FIELD<34){h='THE FIELDS BREAK';d='Collieries reopen at Nanticoke and Duryea';
+   n="Enough men went back that the rest could see it happening.\n\n**Ending — the line gives.** You will spend the winter explaining, and there will be nothing to explain.";}
+  else if(S.STANDING<30){h='NO FRIEND IN WASHINGTON';d='President said to regard both sides as equally at fault';
+   n="You held the men. You lost your name.\n\nIn October the President will look at these coal fields and see two mobs. He will not spend himself on that, and there will be no conference.\n\n**Act Two ends with the door shut.**";}
+  else if(warms>=4){h='MITCHELL CHEERED THROUGH THE VALLEY';d='Operators circulate his remarks to the eastern press';
+   prev={...S};S.COUNTRY=Math.max(0,S.COUNTRY-14);S.STANDING=Math.max(0,S.STANDING-12);
+   n="Every hall you entered this summer stood up.\n\nThe operators have been collecting it. They print it unedited, because unedited is what damages you.\n\n**Act Two ends.** The applause was the thing being used against you.";}
+  else if(Math.abs(S.SPLIT)>20){h='TWO UNIONS IN ONE VALLEY';d='Districts said to be meeting separately';
+   n=(S.SPLIT<0?"The Hazleton and Wilkes-Barre locals have stopped sending delegates. They will not say why, and everybody knows why."
+     :"The old Scranton hands are holding their own meetings now and not inviting anyone.")+
+   "\n\nThe strike holds. The union underneath it does not, quite.\n\n**Act Two ends divided.**";}
+  else {h='NINETEEN WEEKS';d='Coal reaches fourteen dollars the ton in New York';
+   n="You have won nothing and lost nothing.\n\nBut the price of coal in the cities has begun to move, and for the first time since May somebody outside this valley is paying attention.\n\n**Act Two ends.** Winter is doing the work you could not.";}
+  draw('paper',{h,d}); hud();
+  whoEl.textContent='The Scranton Republican'; statEl.textContent='End of Act II';
+  sayEl.innerHTML=md(n); defEl.style.display='none';
+  uiEl.innerHTML=`<button class="go" onclick="location.reload()">Play again ↻</button>`;
+}
+
+for(const k of ['cm','lb','pr','ho']) S.mood[k]=relBand(S.rel[k]);
+show();
+</script>
+</body>
+</html>
