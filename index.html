@@ -307,11 +307,57 @@ section{background:var(--panel);padding:9px 11px 12px;flex:1 1 auto;overflow-y:a
 .pt .brw{transform-box:fill-box;transform-origin:50% 100%;animation:pbrow 4.4s ease-in-out infinite;}
 @keyframes pbrow{0%,58%,100%{transform:translateY(0)}66%,84%{transform:translateY(-6px)}}
 
+/* ── Act IV additions ── */
+/* witness list */
+.wcount{display:flex;justify-content:space-between;align-items:center;padding:6px 9px;
+ background:var(--cell);border:2px solid var(--ink);margin-bottom:7px;}
+.wcount b{font-size:8.6px;letter-spacing:1.6px;text-transform:uppercase;color:var(--rust);}
+.wcount span{font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:700;}
+.wit{border:2px solid #382c21;background:#f4ecd8;padding:6px 8px;margin-bottom:6px;
+ display:flex;gap:8px;cursor:pointer;}
+.wit.on{background:#fcefd6;border-color:var(--rust);box-shadow:2px 2px 0 var(--rust);}
+.wit.off{opacity:.5;}
+.wit .bx{flex:0 0 13px;height:13px;border:2px solid #382c21;background:#fff;margin-top:2px;
+ font-size:10px;line-height:10px;text-align:center;color:var(--rust);font-weight:700;}
+.wit .nm{font-size:11.4px;font-weight:700;display:block;}
+.wit .rl{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;display:block;}
+.wit .ln{font-size:10.4px;font-style:italic;line-height:1.32;margin-top:3px;display:block;}
+.wit .tags{display:block;margin-top:3px;}
+.tg{display:inline-block;font-size:7.6px;letter-spacing:.6px;text-transform:uppercase;
+ border:1px solid #8a7a5c;padding:1px 4px;margin:2px 3px 0 0;color:#5c4a33;}
+.tg.risk{border-color:#a3231a;color:#8c1d15;}
+/* findings board */
+.find{border:2px solid var(--ink);background:#f4ecd8;padding:7px 9px;margin-bottom:8px;}
+.find b{display:block;font-size:8.6px;letter-spacing:1.6px;text-transform:uppercase;color:var(--rust);
+ margin-bottom:5px;}
+.fr{display:flex;align-items:center;gap:7px;margin-bottom:3px;}
+.fr .fl{flex:0 0 96px;font-size:9.6px;text-transform:uppercase;letter-spacing:.4px;}
+.fr .bar{flex:1;font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.5px;color:#3f6b3a;}
+.fr .st{flex:0 0 78px;text-align:right;font-size:9px;font-family:ui-monospace,Menlo,monospace;}
+.fr.no .bar{color:#8c1d15;} .fr.no .st{color:#8c1d15;}
+/* award */
+.doc{background:#fffdf3;border:3px double var(--ink);padding:12px 14px;}
+.doc h4{text-align:center;font-size:12px;letter-spacing:2.4px;text-transform:uppercase;
+ color:var(--rust);margin-bottom:2px;}
+.doc .dt{text-align:center;font-size:8.6px;letter-spacing:1.4px;color:var(--dim);margin-bottom:9px;}
+.doc .it{display:flex;gap:8px;padding:5px 0;border-bottom:1px dotted var(--line);}
+.doc .it:last-child{border-bottom:none;}
+.doc .it .k{flex:1;font-size:11.6px;}
+.doc .it .v{flex:0 0 108px;text-align:right;font-size:9.6px;font-weight:700;
+ font-family:ui-monospace,Menlo,monospace;text-transform:uppercase;}
+.v.yes{color:#2f6b3a;} .v.part{color:#8a5115;} .v.no{color:#8c1d15;}
+
+.away{animation:away 11s linear infinite;}
+@keyframes away{0%{transform:translateY(296px) scale(1.4);opacity:0}
+ 8%{opacity:1}82%{opacity:1}100%{transform:translateY(134px) scale(.26);opacity:0}}
+.wave2{animation:wave2 6s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%;}
+.wave2:nth-of-type(2n){animation-delay:-2s;} .wave2:nth-of-type(3n){animation-delay:-4s;}
+@keyframes wave2{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
 @media (prefers-reduced-motion:reduce){
  .apr,.step1,.step2,.lampglow,.sp.cheer .bod,.roll,.watch,.wcyc,.wflood,
  .piston,.beam,.disch,.seep,.yell,.smk,.pick,.dig,.flowdot,
  .hold,.march,.pace,.flick,.arc,.rain,.rainA,.rainB,.patrol,.hoof,.shiver,
- .sleet,.huddle,.lamplit,.wave{animation:none}
+ .sleet,.huddle,.lamplit,.wave,.away,.wave2{animation:none}
  .pt .hd,.pt .mo,.pt .lid,.pt .brw{animation:none}
  .sp.leaveL,.sp.leaveR{animation:none;opacity:.22}
  .turn{animation:none;opacity:.2}}
@@ -321,7 +367,7 @@ section{background:var(--panel);padding:9px 11px 12px;flex:1 1 auto;overflow-y:a
 <body>
 <div id="stage">
   <header>
-    <div class="mast"><b>The Coal Strike Chronicle · 1902</b><span id="actTag">Act I</span></div>
+    <div class="mast"><b id="mast">The Coal Strike Chronicle · 1902</b><span id="actTag">Act I</span></div>
     <div class="voices" id="voices"></div>
     <div class="meters" id="meters"></div>
     <div id="strip"></div>
@@ -367,13 +413,20 @@ const GLOSS={
  injunction:"A court order telling people to stop. Break one and you go to jail with no trial by jury. This is how the 1894 Pullman strike was broken and how its leader went to prison.",
  arbitration:"When both sides let an outside board decide, and promise ahead of time to accept the answer.",
  ncf:"The National Civic Federation. A group of businessmen, politicians and union leaders who tried to settle strikes in private. Mark Hanna, the Republican boss, ran it.",
- receivership:"When the government takes over a private business and runs it. Roosevelt planned to do this to the mines using the army. Almost nobody thought a president was allowed to."};
+ receivership:"When the government takes over a private business and runs it. Roosevelt planned to do this to the mines using the army. Almost nobody thought a president was allowed to.",
+ commission:"The seven men Roosevelt appointed to decide the case. A judge, an army engineer, a mine expert, a businessman, a bishop, a union man, and a government official.",
+ testimony:"What a witness says under oath. It is written down word for word and kept forever.",
+ crossexam:"When the other side's lawyer questions your witness, trying to make the story fall apart.",
+ conciliation:"A board where both sides bring problems as they come up. Less than a contract. More than nothing.",
+ award:"The commission's final decision. Both sides promised in advance to accept it, whatever it said.",
+ breakerboy:"A boy who picks rock out of coal by hand as it slides down a chute. Some were eight years old."};
 const GLOSS_NAME={checkweighman:'check-weighman',companystore:'company store',
  coalandiron:'Coal and Iron Police',mollies:'Molly Maguires',pinkerton:'Pinkerton detective',
- tentcolony:'tent colony',ncf:'National Civic Federation'};
+ tentcolony:'tent colony',ncf:'National Civic Federation',
+ crossexam:'cross-examination',breakerboy:'breaker boy'};
 const parse=s=>s.replace(/\[\[(\w+)\|([^\]]+)\]\]/g,(m,k,d)=>`<span class="gl" data-k="${k}">${d}</span>`)
                 .replace(/\[\[(\w+)\]\]/g,(m,k)=>`<span class="gl" data-k="${k}">${k}</span>`);
-const md=s=>parse(s).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+const md=s=>parse(String(s).replace(/\\n/g,'\n')).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
                     .replace(/\*([^*]+)\*/g,'<em>$1</em>');
 
 /* ═══ STATE ═══ one object for all three acts; Acts II and III have no
@@ -381,7 +434,7 @@ const md=s=>parse(s).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
    Act III's conference. COALF is the fractional coal Act III's tickCoal drives.
    warms0 marks the I/II boundary so Act II's "cheered by his own" ending still
    measures applause earned in Act II. */
-const S={FIELD:78,FUND:19,COUNTRY:42,STANDING:50,MINES:100,SPLIT:0,
+const S={FIELD:78,FUND:19,COUNTRY:42,STANDING:50,MINES:100,SPLIT:0,act:1,
  COAL:8,COALF:8,DEMAND:2.2,PRE:false,
  rel:{cm:3,lb:-3,pr:0,ho:0},warms:0,warms0:0,hot:0,wry:0,flags:{},
  mood:{cm:'GRUDGING',lb:'ANGRY',op:'COLD',pr:'COLD',ho:'COLD'}};
@@ -438,6 +491,7 @@ function houseFig(x,lit){
 // Act I's five-tier version: Act III's covers only COAL 2..0, and Acts I-II open at 8.
 function coalNote(c,pre){
   if(pre) return 'Every stove in the East burns this. Nobody thinks about it at all.';
+  if(S.act===4) return 'The cities are warm. Nobody is angry any more. Nobody is listening either.';
   return c>=8 ? 'The cities are not cold yet. Outside this valley nobody has noticed you.'
    : c>=6 ? 'Coal is getting dear in the East. Editors have begun to ask who is to blame.'
    : c>=4 ? 'Schools are closing for want of heat. People are pulling coal off rail cars.'
@@ -446,6 +500,7 @@ function coalNote(c,pre){
 }
 function causeNote(working,N,lit,pre){
   if(pre)        return `All ${N} are digging and every house is warm. This is the machine running.`;
+  if(S.act===4)  return `${working} of ${N} men are back at work. The machine has started again without you.`;
   // Warm cities in Acts I-II come off the pile, not out of the ground: only claim the
   // line has broken when this month's digging actually covers demand.
   if(lit>=6)     return production()*3 >= S.DEMAND
@@ -505,7 +560,8 @@ function hud(){
     <span class="mood"><i>${b.e}</i><u>${b.t}</u></span></div>`;}).join('');
   document.getElementById('meters').innerHTML=METERS.map(([k,l,f])=>{
    const d=S[k]-prev[k],a=d===0?'':(d>0?'▲'+d:'▼'+Math.abs(d));
-   const warn=(k==='FUND'&&S.FUND<=4)||(k==='FIELD'&&S.FIELD<40)||(k==='STANDING'&&S.STANDING<32);
+   // In Act IV the men are back by design, so an empty field is no longer a warning.
+   const warn=(k==='FUND'&&S.FUND<=4)||(k==='FIELD'&&S.FIELD<40&&S.act<4)||(k==='STANDING'&&S.STANDING<32);
    return `<div class="mt ${d>0?'up':''} ${warn?'warn':''}"><span class="who">${l}</span>
     <div class="num">${f(S[k])}</div><div class="dl">${a}</div></div>`;}).join('');
   drawStrip();
@@ -1313,7 +1369,7 @@ function scNews(){
 }
 /* ═══ BIG TALKING PORTRAITS ═══ */
 const PORT={
- hanna:{skin:'#f0dcc0',hairC:'#d6d0c4',coat:'#2b2b30',stacheC:'#e6e1d6',browC:'#8c8578',
+ hanna:{ears:1,skin:'#f0dcc0',hairC:'#d6d0c4',coat:'#2b2b30',stacheC:'#e6e1d6',browC:'#8c8578',
   head:"M198,268 C184,148 250,96 325,96 C400,96 466,148 452,268 C468,356 418,442 325,448 C232,442 182,356 198,268 Z",
   hairP:"M200,262 C186,192 196,140 228,116 C214,152 210,208 216,262 Z M450,262 C464,192 454,140 422,116 C436,152 440,208 434,262 Z",
   browL:"M216,208 L308,224 L302,246 L221,230 Z",browR:"M434,208 L342,224 L348,246 L429,230 Z",
@@ -1321,7 +1377,7 @@ const PORT={
   stache:"M325,318 C268,296 186,310 140,354 C172,394 236,380 292,354 C312,364 338,364 358,354 C414,380 478,394 510,354 C464,310 382,296 325,318 Z",
   jowl:"M238,314 C224,364 236,414 266,444 M412,314 C426,364 414,414 384,444",
   eyes:[[268,252],[382,252]],collar:'wing'},
- baer:{skin:'#f4e6d0',hairC:'#8d8578',coat:'#20201f',stacheC:'#9a938a',browC:'#5c564c',
+ baer:{ears:1,skin:'#f4e6d0',hairC:'#8d8578',coat:'#20201f',stacheC:'#9a938a',browC:'#5c564c',
   head:"M206,264 C192,146 252,94 325,94 C398,94 458,146 444,264 C458,354 414,440 325,446 C236,440 192,354 206,264 Z",
   hairP:"M206,236 C200,158 250,100 325,100 C400,100 450,158 444,236 C436,188 414,152 380,158 C350,164 300,164 270,158 C236,152 214,188 206,236 Z",
   browL:"M224,208 L306,226 L300,246 L229,230 Z",browR:"M426,208 L344,226 L350,246 L421,230 Z",
@@ -1329,7 +1385,7 @@ const PORT={
   stache:"M325,320 C296,308 250,314 222,342 C245,366 289,358 313,344 C318,350 332,350 337,344 C361,358 405,366 428,342 C400,314 354,308 325,320 Z",
   jowl:"M242,310 C228,360 238,412 266,440 M408,310 C422,360 412,412 384,440",
   eyes:[[272,252],[378,252]],collar:'wing'},
- tr:{skin:'#e8bd93',hairC:'#4b3a2a',coat:'#33383f',stacheC:'#9a9084',browC:'#3a2c1c',specs:1,
+ tr:{ears:1,skin:'#e8bd93',hairC:'#4b3a2a',coat:'#33383f',stacheC:'#9a9084',browC:'#3a2c1c',specs:1,
   head:"M190,268 C172,142 240,90 325,90 C410,90 478,142 460,268 C474,358 428,442 325,448 C222,442 176,358 190,268 Z",
   hairP:"M186,224 C172,122 230,70 325,70 C420,70 478,122 464,224 C444,152 404,112 325,112 C246,112 206,152 186,224 Z",
   browL:"M214,204 L308,226 L300,248 L219,226 Z",browR:"M436,204 L342,226 L350,248 L431,226 Z",
@@ -1337,7 +1393,7 @@ const PORT={
   stache:"M325,318 C270,296 186,310 140,354 C172,394 236,380 292,354 C312,364 338,364 358,354 C414,380 478,394 510,354 C464,310 380,296 325,318 Z",
   jowl:"M240,314 C226,364 238,414 268,444 M410,314 C424,364 412,414 382,444",
   eyes:[[266,250],[384,250]],collar:'wing'},
- you:{skin:'#e8c199',hairC:'#2f2318',coat:'#3c4a56',stacheC:'#332619',browC:'#241a12',
+ you:{ears:1,skin:'#e8c199',hairC:'#2f2318',coat:'#3c4a56',stacheC:'#332619',browC:'#241a12',
   head:"M204,270 C190,156 250,104 325,104 C400,104 460,156 446,270 C458,350 412,432 325,438 C238,432 192,350 204,270 Z",
   hairP:"M198,226 C188,140 246,90 325,90 C404,90 462,140 452,226 C438,160 398,126 325,126 C252,126 212,160 198,226 Z",
   browL:"M232,214 L306,230 L302,246 L236,230 Z",browR:"M418,214 L344,230 L348,246 L414,230 Z",
@@ -1345,25 +1401,53 @@ const PORT={
   stache:"M325,328 C304,318 274,324 260,344 C282,358 310,352 322,344 L325,350 L328,344 C340,352 368,358 390,344 C376,324 346,318 325,328 Z",
   jowl:"M252,328 C244,368 252,402 268,428 M398,328 C406,368 398,402 382,428",
   eyes:[[276,254],[374,254]],collar:'soft'},
- fahy:{skin:'#dcae82',hairC:'#241a12',coat:'#3a3630',stacheC:'#2b2016',browC:'#241a12',
+ fahy:{ears:1,skin:'#dcae82',hairC:'#241a12',coat:'#3a3630',stacheC:'#2b2016',browC:'#241a12',
   head:"M204,272 C192,160 252,108 325,108 C398,108 458,160 446,272 C456,350 412,432 325,438 C238,432 194,350 204,272 Z",
   hairP:"M200,230 C192,148 246,100 325,100 C404,100 458,148 450,230 C436,166 396,136 325,136 C254,136 214,166 200,230 Z",
   browL:"M232,220 L306,234 L302,250 L236,236 Z",browR:"M418,220 L344,234 L348,250 L414,236 Z",
   nose:"M325,244 L312,304 C316,318 334,318 338,304 Z",
   stache:"M325,330 C306,320 278,326 264,344 C284,358 310,352 322,344 L325,350 L328,344 C340,352 366,358 386,344 C372,326 344,320 325,330 Z",
   jowl:"M256,332 C248,370 256,402 270,426 M394,332 C402,370 394,402 380,426",
-  eyes:[[278,256],[372,256]],collar:'soft',cap:1}};
-
+  eyes:[[278,256],[372,256]],collar:'soft',cap:1},
+ darrow:{skin:'#e6c49c',hairC:'#4a4038',coat:'#2f3138',stacheC:'#4a4038',browC:'#3a3128',
+  head:"M200,266 C188,150 250,98 325,98 C400,98 462,150 450,266 C462,352 414,436 325,442 C236,436 188,352 200,266 Z",
+  hairP:"M196,214 C190,138 244,94 325,94 C406,94 460,138 454,214 C436,158 392,124 325,124 C258,124 214,158 196,214 Z",
+  browL:"M226,204 L308,224 L302,244 L231,226 Z",browR:"M424,204 L342,224 L348,244 L419,226 Z",
+  nose:"M325,234 L306,306 C312,320 338,320 344,306 Z",
+  stache:"M325,322 C300,312 262,318 246,342 C270,362 306,354 322,344 L325,350 L328,344 C344,354 380,362 404,342 C388,318 350,312 325,322 Z",
+  jowl:"M246,312 C234,360 244,410 270,440 M404,312 C416,360 406,410 380,440",
+  eyes:[[272,252],[378,252]],collar:'soft',lock:1},
+ boy:{skin:'#d8b48c',hairC:'#241a12',coat:'#4a4438',stacheC:'#241a12',browC:'#241a12',
+  head:"M226,266 C216,178 264,132 325,132 C386,132 434,178 424,266 C432,330 396,392 325,398 C254,392 218,330 226,266 Z",
+  hairP:"M222,236 C216,168 262,122 325,122 C388,122 434,168 428,236 C414,186 384,158 325,158 C266,158 236,186 222,236 Z",
+  browL:"M254,238 L308,248 L306,258 L256,250 Z",browR:"M396,238 L342,248 L344,258 L394,250 Z",
+  nose:"M325,258 L316,300 C319,310 331,310 334,300 Z",
+  stache:"",jowl:"",
+  eyes:[[288,270],[362,270]],collar:'soft',young:1},
+ widow:{skin:'#e2c0a0',hairC:'#3a2b22',coat:'#2b2622',stacheC:'',browC:'#3a2b22',
+  head:"M212,268 C202,166 258,116 325,116 C392,116 448,166 438,268 C448,340 404,410 325,416 C246,410 202,340 212,268 Z",
+  hairP:"M208,244 C202,156 256,106 325,106 C394,106 448,156 442,244 C440,180 392,146 325,146 C258,146 210,180 208,244 Z",
+  browL:"M244,232 L306,244 L304,256 L246,246 Z",browR:"M406,232 L344,244 L346,256 L404,246 Z",
+  nose:"M325,250 L314,300 C318,312 332,312 336,300 Z",
+  stache:"",jowl:"",
+  eyes:[[282,264],[368,264]],collar:'shawl'}};
+/* Union of Act III's rig and Act IV's: heat/rage, specs, cap, wing collars and the
+   ears-and-bags detailing come from Act III; the shawl collar, the boy's shorter
+   face, the sad brow and optional stache/jowl from Act IV. Everything is driven off
+   the portrait's own data, so each act's faces render as they were drawn. */
 function portraitFig(id,o){
   const C=PORT[id]; o=o||{};
   const heat=Math.max(0,Math.min(1,o.heat||0)), mood=o.mood||'calm';
   const rage = mood==='hot' ? heat : 0;
-  const browDy = mood==='hot' ? 10+rage*9 : mood==='wry' ? -4 : 0;
+  const browDy = mood==='hot' ? 10+rage*9 : mood==='wry' ? -4 : mood==='sad' ? -3 : 0;
   const gape = mood==='hot' ? 16+rage*16 : 0;
+  const mid = C.young?338:368, top = C.young?330:358, bot = C.young?356:392;
   const flush = heat ? `<ellipse cx="240" cy="286" rx="56" ry="30" fill="#c0392b" opacity="${(.45*heat).toFixed(2)}"/>
     <ellipse cx="410" cy="286" rx="56" ry="30" fill="#c0392b" opacity="${(.45*heat).toFixed(2)}"/>
     <ellipse cx="325" cy="168" rx="86" ry="26" fill="#c0392b" opacity="${(.3*heat).toFixed(2)}"/>` : '';
-  const collar = C.collar==='wing'
+  const collar = C.collar==='shawl'
+   ? `<path d="M200,470 C240,404 410,404 450,470 L470,660 L180,660 Z"/>`
+   : C.collar==='wing'
    ? `<polygon points="256,478 325,544 280,636 206,500"/><polygon points="394,478 325,544 370,636 444,500"/>`
    : `<path d="M262,478 L325,538 L292,626 L216,506 Z"/><path d="M388,478 L325,538 L358,626 L434,506 Z"/>`;
   let eyeFill='',eyeLine='',lids='';
@@ -1371,16 +1455,16 @@ function portraitFig(id,o){
     const s=x<325?-1:1;
     const d=`M${x-25},${y} C${x-15},${y-14} ${x+15},${y-14} ${x+25},${y} C${x+15},${y+13} ${x-15},${y+13} ${x-25},${y} Z`;
     eyeFill+=`<path d="${d}" fill="#f7f2e2"/><circle cx="${x+s*4}" cy="${y-1}" r="6.6" fill="#241d16"/>`;
-    eyeLine+=`<path d="${d}"/><path d="M${x-23},${y+20} C${x-8},${y+29} ${x+13},${y+26} ${x+23},${y+18}"/>`;
+    eyeLine+=`<path d="${d}"/>`+(C.ears?`<path d="M${x-23},${y+20} C${x-8},${y+29} ${x+13},${y+26} ${x+23},${y+18}"/>`:'');
     lids+=`<path class="lid" d="${d}" fill="${C.skin}" stroke="#241d16" stroke-width="2.4"/>`;
   }
   const plates=`<g transform="translate(2.6,-2.4)">
    <path d="M76,660 C118,528 214,476 325,468 C436,476 532,528 574,660 Z" fill="${C.coat}"/>
-   <g fill="#f7f0dc">${collar}</g>
+   <g fill="${C.collar==='shawl'?'#7d4a3a':'#f7f0dc'}">${collar}</g>
    <path d="M240,404 C240,474 268,488 325,488 C382,488 410,474 410,404 Z" fill="${C.skin}"/>
    <path d="${C.head}" fill="${C.skin}"/>${flush}
    <path d="${C.hairP}" fill="${C.hairC}"/>
-   <path d="${C.stache}" fill="${C.stacheC}"/>
+   ${C.stache?`<path d="${C.stache}" fill="${C.stacheC}"/>`:''}
    ${eyeFill}
    <path d="${C.head}" fill="url(#hd)" opacity=".07"/></g>`;
   const key=`<g fill="none" stroke="#241d16" stroke-width="3.4" stroke-linejoin="round">
@@ -1388,10 +1472,12 @@ function portraitFig(id,o){
    <g stroke-width="2.6">${collar}</g>
    <path d="M240,404 C240,474 268,488 325,488 C382,488 410,474 410,404 Z" stroke-width="2.6"/>
    <path d="${C.head}" stroke-width="4.4"/><path d="${C.hairP}" stroke-width="3"/>
-   <path d="M192,262 C166,272 172,318 192,324" stroke-width="2.6"/>
-   <path d="M458,262 C484,272 478,318 458,324" stroke-width="2.6"/>
-   <path d="${C.nose}" stroke-width="2.8"/><path d="${C.stache}" stroke-width="3"/>
-   <path d="${C.jowl}" stroke-width="2.2"/><g stroke-width="2.6">${eyeLine}</g>
+   ${C.ears?`<path d="M192,262 C166,272 172,318 192,324" stroke-width="2.6"/>
+     <path d="M458,262 C484,272 478,318 458,324" stroke-width="2.6"/>`:''}
+   <path d="${C.nose}" stroke-width="2.8"/>
+   ${C.stache?`<path d="${C.stache}" stroke-width="3"/>`:''}
+   ${C.jowl?`<path d="${C.jowl}" stroke-width="2.2"/>`:''}
+   <g stroke-width="2.6">${eyeLine}</g>
    ${C.specs?`<circle cx="${C.eyes[0][0]}" cy="${C.eyes[0][1]}" r="44" stroke-width="5"/>
      <circle cx="${C.eyes[1][0]}" cy="${C.eyes[1][1]}" r="44" stroke-width="5"/>
      <path d="M${C.eyes[0][0]+44},${C.eyes[0][1]-8} C325,228 325,228 ${C.eyes[1][0]-44},${C.eyes[1][1]-8}" stroke-width="5"/>
@@ -1409,13 +1495,14 @@ function portraitFig(id,o){
      <path d="${C.browL}" fill="${C.browC}"/>
      <path d="${C.browR}" fill="${C.browC}" transform="translate(0,${mood==='wry'?8:0})"/></g>
    ${lids}
-   <g class="mo"><path d="M${282-gape},${368-rage*4} C304,${358-rage*8} 346,${358-rage*8}
-     ${368+gape},${368-rage*4} C362,${392+rage*22} 288,${392+rage*22}
-     ${282-gape},${368-rage*4} Z" fill="#4a1a13"/></g>
+   <g class="mo"><path d="M${292-gape},${mid-rage*4} C${308},${top-rage*8} ${342},${top-rage*8}
+     ${358+gape},${mid-rage*4} C${352},${bot+rage*22} ${298},${bot+rage*22}
+     ${292-gape},${mid-rage*4} Z" fill="${C.young?'#5c241c':'#4a1a13'}"/></g>
    ${rage>.55?`<g stroke="#8c1d15" stroke-width="3" stroke-linecap="round" opacity="${((rage-.55)*2).toFixed(2)}">
      <path d="M196,214 L150,196"/><path d="M188,254 L138,252"/><path d="M198,292 L152,306"/>
      <path d="M454,214 L500,196"/><path d="M462,254 L512,252"/><path d="M452,292 L498,306"/></g>`:''}
-   <path d="M282,368 C304,358 346,358 368,368" fill="none" stroke="#241d16" stroke-width="3.4" stroke-linecap="round"/></g>`;
+   <path d="M${292},${mid} C${308},${top} ${342},${top} ${358},${mid}"
+     fill="none" stroke="#241d16" stroke-width="3.4" stroke-linecap="round"/></g>`;
 }
 function scPortrait(id,bg,name,sub,o){
   const back = bg==='room'
@@ -1433,6 +1520,14 @@ function scPortrait(id,bg,name,sub,o){
       <g opacity=".45">${[40,96,556,612].map((x,i)=>fig({x,y:290,s:1.4,hat:i%2?'round':'flat',dark:'#1a1610',arms:i%2?'up':'dn'})).join('')}</g>
       <rect x="150" y="14" width="360" height="26" fill="#efe6cd" stroke="#14110e" stroke-width="2"/>
       <text x="330" y="32" text-anchor="middle" font-size="10" letter-spacing="2.4" fill="#7a3426">SPECIAL CONVENTION</text>`
+   : bg==='hearing'
+   ? `<rect width="660" height="300" fill="#ded3b6"/><rect width="660" height="300" fill="url(#hl)" opacity=".16"/>
+      <rect x="14" y="18" width="118" height="104" fill="#b3a483" stroke="#14110e" stroke-width="2.4"/>
+      <line x1="73" y1="18" x2="73" y2="122" stroke="#14110e" stroke-width="1.6"/>
+      <rect x="528" y="18" width="118" height="104" fill="#b3a483" stroke="#14110e" stroke-width="2.4"/>
+      <line x1="587" y1="18" x2="587" y2="122" stroke="#14110e" stroke-width="1.6"/>
+      <rect x="0" y="222" width="660" height="78" fill="#4a3524"/>
+      <rect x="0" y="222" width="660" height="5" fill="#8a6d33"/>`
    : `<rect width="660" height="300" fill="#d8ceb2"/><rect width="660" height="300" fill="url(#hl)" opacity=".2"/>
       <rect x="18" y="26" width="126" height="112" fill="#b3a483" stroke="#14110e" stroke-width="2.4"/>
       <line x1="81" y1="26" x2="81" y2="138" stroke="#14110e" stroke-width="1.6"/>
@@ -1691,10 +1786,14 @@ const PEOPLE={
  hanna:{k:'hanna',nm:'Senator Mark Hanna',sub:'Republican boss · National Civic Federation'},
  baer :{k:'op',   nm:'George F. Baer',    sub:'President, Philadelphia &amp; Reading'},
  fahy :{k:'lb',   nm:'John Fahy',         sub:'District 9 · Hazleton'},
- tr   :{k:'you',  nm:'Theodore Roosevelt', sub:'President of the United States'}};
+ tr   :{k:'you',  nm:'Theodore Roosevelt', sub:'President of the United States'},
+ darrow:{k:'darrow',nm:'Clarence Darrow',  sub:'Counsel for the mine workers',port:1}};
 function personCard(id,quote,heat){
   const p=PEOPLE[id];
-  return `<div class="offer"><div class="fc">${faceSvg(p.k,heat>=.6?'FURIOUS':heat>=.3?'ANGRY':'COLD',heat)}</div>
+  const head = p.port
+   ? `<svg viewBox="176 76 300 340" xmlns="http://www.w3.org/2000/svg">${portraitFig(p.k,{})}</svg>`
+   : faceSvg(p.k,heat>=.6?'FURIOUS':heat>=.3?'ANGRY':'COLD',heat);
+  return `<div class="offer"><div class="fc">${head}</div>
    <div><div class="nm">${p.nm}</div><div class="sub">${p.sub}</div><q>${quote}</q></div></div>`;
 }
 
@@ -1805,7 +1904,212 @@ function confEnd(){
   const fx = temper>=6?{COUNTRY:-14} : temper===0?{COUNTRY:14} : {COUNTRY:16};
   apply(fx,rx,"Roosevelt wrote afterwards that but for the dignity of his office he would have taken Baer by the seat of the trousers and thrown him out of the window. He also wrote that the only man in the room who behaved like a gentleman was the representative of the miners.");
 }
-/* ═══ BEATS ═══ Acts I, II and III in one array, each beat tagged with its act */
+/* ═══ ACT IV SCENES ═══ */
+function scReturn(){
+  const m=(x,d)=>`<g class="away" style="animation-delay:${d}s"><g transform="translate(${x},0)">
+    <path d="M-11,0 L-11,-30 L-2,-30 L-3,0 Z" fill="#1c1713"/>
+    <path d="M4,0 L3,-30 L12,-30 L11,0 Z" fill="#241f1a"/>
+    <path d="M-13,-28 L-14,-56 L-9,-74 L9,-74 L14,-56 L13,-28 Z" fill="#2b241d"/>
+    <path d="M-14,-56 L-21,-32 L-16,-30 L-9,-50 Z" fill="#2b241d"/>
+    <path d="M14,-56 L21,-32 L16,-30 L9,-50 Z" fill="#2b241d"/>
+    <ellipse cx="0" cy="-84" rx="10" ry="11.5" fill="#c9ad8b"/>
+    <path d="M-7,-91 C-7,-99 7,-99 7,-91 L10,-90 L-10,-90 Z" fill="#14110e"/>
+    <circle class="lampglow" cx="0" cy="-97" r="8" fill="url(#lamp)"/></g></g>`;
+  return wrap(`
+   <rect width="660" height="300" fill="url(#pg)"/>
+   <rect x="0" y="0" width="660" height="128" fill="url(#hl)" opacity=".45"/>
+   <path d="M0,128 L120,44 L232,128 Z" fill="#241f1a"/>
+   <path d="M470,128 L470,32 L500,32 L500,8 L594,8 L594,128 Z" fill="#2c2722" stroke="#14110e" stroke-width="2.5"/>
+   <g fill="#f2e8d3" stroke="#14110e" stroke-width="1.4">
+    <rect x="512" y="28" width="16" height="20"/><rect x="540" y="28" width="16" height="20"/>
+    <rect x="568" y="28" width="16" height="20"/></g>
+   <rect x="0" y="128" width="660" height="172" fill="#cdbb96"/>
+   <path d="M292,128 L292,96 C292,74 368,74 368,96 L368,128 Z" fill="#050403"/>
+   <path d="M292,98 C292,74 368,74 368,98" fill="none" stroke="#14110e" stroke-width="6"/>
+   <g fill="none" stroke="#14110e" stroke-width="4">
+    <path d="M286,96 L300,30 L360,30 L374,96"/><path d="M300,30 L330,10 L360,30"/>
+    <path d="M300,62 L360,62"/></g>
+   <circle cx="330" cy="24" r="9" fill="none" stroke="#14110e" stroke-width="3.4"/>
+   <line x1="330" y1="33" x2="330" y2="96" stroke="#14110e" stroke-width="2.4"/>
+   <rect x="312" y="96" width="36" height="26" fill="none" stroke="#8a7a5c" stroke-width="2.6"/>
+   <line x1="0" y1="128" x2="660" y2="128" stroke="#14110e" stroke-width="3"/>
+   <g transform="translate(330,0)">
+    ${m(-46,0)}${m(34,-1.6)}${m(-8,-3.2)}${m(62,-4.8)}${m(-72,-6.4)}${m(12,-8)}${m(-28,-9.6)}</g>
+   <text x="330" y="290" text-anchor="middle" font-size="11" font-style="italic" fill="#3a2f24">
+    October 23. One by one, back into the cage.</text>`);
+}
+function scHearing(){
+  const bench=[124,196,268,340,412,484,556].map((x,i)=>
+    fig({x,y:150,s:1.15,hat:'derby',dark:i===5?'#3a4450':'#232227',skin:'#eddcc2'})).join('');
+  return wrap(`
+   <rect width="660" height="300" fill="#e2d7bb"/><rect width="660" height="300" fill="url(#hl)" opacity=".18"/>
+   <rect x="236" y="8" width="188" height="42" fill="#f2e8d3" stroke="#14110e" stroke-width="2.4"/>
+   <text x="330" y="26" text-anchor="middle" font-size="9" letter-spacing="1.8" fill="#7a3426">ANTHRACITE COAL STRIKE</text>
+   <text x="330" y="42" text-anchor="middle" font-size="9" letter-spacing="1.8" fill="#7a3426">COMMISSION</text>
+   ${bench}
+   <path d="M40,152 L620,152 L640,208 L20,208 Z" fill="#4a3524" stroke="#14110e" stroke-width="3"/>
+   <path d="M40,152 L620,152" stroke="#8a6d33" stroke-width="3"/>
+   <rect x="70" y="228" width="96" height="60" fill="#5a4530" stroke="#14110e" stroke-width="2.4"/>
+   <rect x="70" y="218" width="96" height="12" fill="#6b5537" stroke="#14110e" stroke-width="2"/>
+   <text x="118" y="298" text-anchor="middle" font-size="8" letter-spacing="1.4" fill="#5c4a33">THE WITNESS</text>
+   ${fig({x:118,y:228,s:1.5,hat:'flat',dark:'#3a322a'})}
+   ${fig({x:520,y:288,s:1.6,hat:'',dark:'#2f3138',skin:'#e6c49c',arms:'up'})}
+   <text x="520" y="298" text-anchor="middle" font-size="8" letter-spacing="1.4" fill="#5c4a33">DARROW</text>`);
+}
+function scDay(){
+  const crowd=[40,92,144,196,248,300,352,404,456,508,560,612].map((x,i)=>
+    fig({x,y:292,s:1.2+((i%3)*.06),hat:i%3?'flat':'round',dark:i%3?'#3a322a':'#241f1a',
+      arms:'up',cls:'wave2'})).join('');
+  return wrap(`
+   <rect width="660" height="300" fill="url(#pg)"/>
+   <rect x="0" y="0" width="660" height="150" fill="url(#hl)" opacity=".3"/>
+   <path d="M0,150 L130,58 L250,150 Z" fill="#241f1a"/>
+   <rect x="150" y="26" width="360" height="86" fill="#f6efdb" stroke="#14110e" stroke-width="3"/>
+   <g transform="translate(214,20) scale(.16)">${portraitFig('you',{})}</g>
+   <text x="410" y="62" text-anchor="middle" font-size="15" letter-spacing="2.4" fill="#7a3426">MITCHELL</text>
+   <text x="410" y="84" text-anchor="middle" font-size="11" letter-spacing="1.6" fill="#5c4a33">OCTOBER 29</text>
+   <line x1="0" y1="150" x2="660" y2="150" stroke="#14110e" stroke-width="3"/>
+   <rect x="0" y="150" width="660" height="150" fill="#c6b48f"/>
+   ${crowd}
+   <text x="330" y="146" text-anchor="middle" font-size="11" font-style="italic" fill="#3a2f24">
+    They named a holiday after you.</text>`);
+}
+
+/* ═══ THE CASE ═══ */
+const FINDINGS=[['WAGE','What a man is paid'],['HOURS','How long a shift is'],
+ ['WEIGHT','How the coal is weighed'],['CHILD','Boys in the breakers'],
+ ['DANGER','How many men die'],['UNION','Whether you exist']];
+const WITNESSES=[
+ {id:'coll',nm:'Henry Coll',rl:'Contract miner, 24 years',
+  ln:'"I have sent up coal for twenty-four years. I have never once been told what it weighed."',
+  g:{WAGE:2,WEIGHT:3},risk:0},
+ {id:'books',nm:'A company clerk',rl:'Brought the pay books with him',
+  ln:'"These are their own ledgers. I only ask the board to read them."',
+  g:{WAGE:3,HOURS:2},risk:0,note:'Dry. Nobody will cry. The numbers do not move.'},
+ {id:'boy',nm:'Andrew Chippie',rl:'[[breakerboy|Breaker boy]], twelve years old',
+  ln:'"I pick slate. My hands bleed in winter. I have not been to school."',
+  g:{CHILD:5,DANGER:1},risk:0,note:'Wins you nothing in the award. Every paper in America will print it.'},
+ {id:'widow',nm:'Mrs. Kudrick',rl:'Widow, three children',
+  ln:'"They brought him up in the cage. The company sent a bill for the powder he had not used."',
+  g:{DANGER:4,WAGE:1},risk:1,riskLn:'Their lawyer will suggest her husband was careless.'},
+ {id:'doc',nm:'A colliery doctor',rl:'Paid by the company',
+  ln:'"I signed the certificates. I counted four hundred and eleven that year."',
+  g:{DANGER:3,CHILD:1},risk:1,riskLn:'He still works for them. He may soften it on the stand.'},
+ {id:'boss',nm:'A docking boss',rl:'Hostile witness',
+  ln:'"I decide what is rock. I do not have to explain it to anybody."',
+  g:{WEIGHT:4},risk:2,riskLn:'A hostile witness can turn. In [[crossexam|cross-examination]] he may make the whole system sound fair.'},
+ {id:'super',nm:'A superintendent who quit',rl:'Ran a colliery for nine years',
+  ln:'"I was told what tonnage to report. I reported it."',
+  g:{WEIGHT:2,HOURS:3},risk:1,riskLn:'They will call him a disgruntled man with a grudge.'},
+ {id:'priest',nm:'Father Curran',rl:'Parish priest, Wilkes-Barre',
+  ln:'"I have buried more men from that colliery than I have married."',
+  g:{DANGER:2,CHILD:2},risk:0},
+ {id:'self',nm:'John Mitchell',rl:'Yourself, under oath',
+  ln:'"I will answer for the union. I ask the board to say plainly that it exists."',
+  g:{UNION:4,WAGE:1},risk:2,riskLn:'Five days of [[crossexam|cross-examination]] about every stone thrown since May.'}];
+const SLOTS=5;
+const called=new Set();
+
+function tally(){
+  const t={WAGE:0,HOURS:0,WEIGHT:0,CHILD:0,DANGER:0,UNION:0};
+  WITNESSES.forEach(w=>{ if(!called.has(w.id)) return;
+    for(const k in w.g) t[k]+=w.g[k];
+    if(w.risk===2){ t.WAGE-=1; } });
+  if(S.flags.LEAD) t[S.flags.LEAD]+=3;
+  t.OPS = 3;                       // the operators put on their own case, always
+  t.WAGE=Math.max(0,t.WAGE-2); t.HOURS=Math.max(0,t.HOURS-1);
+  return t;
+}
+function drawCase(){
+  const box=document.getElementById('wits'); if(!box) return;
+  box.innerHTML=WITNESSES.map(w=>{
+    const on=called.has(w.id), full=called.size>=SLOTS&&!on;
+    return `<div class="wit ${on?'on':''} ${full?'off':''}" data-id="${w.id}">
+     <div class="bx">${on?'✕':''}</div>
+     <div><span class="nm">${w.nm}</span><span class="rl">${parse(w.rl)}</span>
+      <span class="ln">${w.ln}</span><span class="tags">
+      ${Object.keys(w.g).map(k=>`<span class="tg">${FINDINGS.find(f=>f[0]===k)[1]}</span>`).join('')}
+      ${w.risk?`<span class="tg risk">risk</span>`:''}</span>
+      ${w.note?`<span class="ln" style="color:#8a5115">${w.note}</span>`:''}
+      ${w.risk&&on?`<span class="ln" style="color:#8c1d15">${parse(w.riskLn)}</span>`:''}</div></div>`;}).join('');
+  document.querySelectorAll('.wit').forEach(el=>el.onclick=()=>{
+    const id=el.dataset.id;
+    if(called.has(id)) called.delete(id);
+    else if(called.size<SLOTS) called.add(id);
+    drawCase(); drawFind(); bindGloss();
+  });
+  document.getElementById('slots').textContent=called.size+' of '+SLOTS+' days used';
+  const g=document.getElementById('casego'); if(g) g.disabled=called.size<SLOTS;
+}
+function drawFind(){
+  const t=tally(), box=document.getElementById('find'); if(!box) return;
+  box.innerHTML=`<b>What the board has heard</b>`+FINDINGS.map(([k,lab])=>{
+    const v=t[k], pips=Math.min(8,v);
+    const st = k==='UNION' ? 'they will not' : v>=6?'proved':v>=3?'partly':'not yet';
+    return `<div class="fr ${k==='UNION'||v<3?'no':''}"><div class="fl">${lab}</div>
+     <div class="bar">${'▮'.repeat(pips)}${'▯'.repeat(8-pips)}</div>
+     <div class="st">${st}</div></div>`;}).join('');
+}
+function submitCase(){
+  const t=tally();
+  S.flags.CASE=t;
+  const strong=FINDINGS.filter(([k])=>k!=='UNION'&&t[k]>=6).length;
+  const rx={
+   cm:[strong>=3?'GRUDGING':'ANGRY', strong>=3?'He put the weigh house on the record. Twenty years we asked for that.'
+      :'Five days, and half of them spent on things that will not put bread on a table.'],
+   lb:[t.CHILD>=5?'GRUDGING':'COLD', t.CHILD>=5?'They put a boy of twelve in front of seven men in good coats. Let them look at him.'
+      :'The board heard about coal. It did not hear about us.'],
+   op:['COLD','Sentiment is not evidence. We shall put on figures.'],
+   pr:[t.CHILD>=5?'CHEERING':'GRUDGING', t.CHILD>=5?'The testimony of the breaker boys is the most damning thing printed this year.'
+      :'The miners made a careful case, and a dull one.'],
+   ho:[t.DANGER>=5?'GRUDGING':'COLD', t.DANGER>=5?'We did not know they died at that rate. Nobody told us.'
+      :'We only want to know what it does to the price.']};
+  apply({},rx,"The commission heard 558 witnesses over three months. Clarence Darrow argued for the miners. The testimony of the breaker boys did not change the award at all, and it changed the country.");
+}
+
+/* ═══ THE AWARD ═══ */
+function award(){
+  // Recomputed, not read from S.flags.CASE: Darrow picks what to lead on a beat after
+  // the witnesses are called, and tally() is where that choice is worth anything.
+  const t=tally();
+  const yes=(v)=>v>=6?2:v>=3?1:0;
+  return {
+   wage:yes(t.WAGE), hours:yes(t.HOURS), weight:yes(t.WEIGHT),
+   concil:(yes(t.WAGE)+yes(t.HOURS))>=2?1:0, union:0,
+   child:t.CHILD, danger:t.DANGER};
+}
+function awardDoc(){
+  const a=award();
+  const row=(k,v,txt)=>`<div class="it"><div class="k">${k}</div>
+    <div class="v ${v===2?'yes':v===1?'part':'no'}">${txt}</div></div>`;
+  return `<div class="doc"><h4>Award of the Commission</h4>
+   <div class="dt">Washington · March 21, 1903</div>
+   ${row('Wages', a.wage, a.wage===2?'up 10 per cent':a.wage===1?'up 5 per cent':'no increase')}
+   ${row('The working day', a.hours, a.hours===2?'nine hours':a.hours===1?'nine hours, some trades':'unchanged')}
+   ${row('Weighing the coal', a.weight, a.weight===2?'checkweighman allowed':a.weight===1?'weighed where practical':'unchanged')}
+   ${row('A standing board for disputes', a.concil, a.concil?'granted':'refused')}
+   ${row('Recognition of the union', 0, 'refused')}
+   </div>`;
+}
+
+function awardUI(){
+  const a=award(), good=a.wage+a.hours+a.weight+a.concil, thin = good<=2;
+  return awardDoc()+
+   `<button class="btn" style="margin-top:9px" onclick="signIt()"><b>Sign it.</b>
+     <i class="pro">Why you should — ${thin
+       ? 'It is thin, but both sides gave their word to accept whatever the board said, and your word is the only thing you have built in five months.'
+       : 'It is more than any anthracite miner has ever been given, and it is written down where a company cannot quietly take it back.'}</i>
+     <i class="con" style="margin-top:4px">Why you should not — ${thin
+       ? 'Five months of hunger bought almost nothing, and every man in the valley can do that arithmetic.'
+       : 'They still would not write the word union, and that is what the men actually struck for.'}</i></button>
+    <button class="btn" onclick="refuseIt()"><b>Refuse it. Call them out again.</b>
+     <i class="pro">Why you should — ${thin
+       ? 'If this is all a board will give, then the board was never worth the wait, and the men deserve to hear you say so.'
+       : 'You never agreed that seven strangers could price a man\'s life, and you could go back out tomorrow.'}</i>
+     <i class="con" style="margin-top:4px">Why you should not — It is March. The men have been back at work and drawing wages since October. The relief fund is empty. Nobody needs coal in spring. And you promised in front of the President that you would accept whatever came.</i></button>`;
+}
+
+/* ═══ BEATS ═══ Acts I to IV in one array, each beat tagged with its act */
 const BEATS=[
 {act:1,scene:'chain',tag:'Before the strike',who:'How it works',pre:true,coal:8,
  text:"Coal powers America. Miners power coal.\n\nEverything in the country that moves or gets warm burns it. Factories, locomotives, ships, and — for [[anthracite|hard coal]] — the stove in every house between Boston and Baltimore.\n\nMen cut it out of the ground. It rides the railroad east. It ends up in somebody's cellar. That is the whole machine, and it has never once stopped.\n\n**Watch the bar above.** Twelve men at work, coal moving down the line, eight houses warm. Remember what it looks like when it is running.",
@@ -2089,6 +2393,53 @@ const BEATS=[
 {act:3,scene:'react',tag:'The same morning',who:'You',coal:1,
  text:"He was going to take the mines. Off the owners. With the army.\n\nHe put a union man on that board. He made up a title for him, and they said yes, because they got to keep the word.\n\nAnd they wrote all of it on a boat. On J. P. Morgan's yacht, in New York harbour, while you sat in Indianapolis waiting for a telegram that was never coming.\n\nHe sat across a table from you for an entire afternoon and told you none of it.\n\nYou were never in the negotiation.\n\n**You were the evidence.**",
  type:'end'},
+
+{act:4,scene:'return',tag:'October 23',who:'They go back',
+ text:"At six in the morning the cages start running again.\\n\\n147,000 men go back down. There are no terms. No wage agreed. No hours agreed. Nothing in writing.\\n\\nThey go back because seven men in Washington will decide it later. And because there is no food left.\\n\\n**Look at the bar above.** The machine has started again. Nobody is angry now. Nobody is listening either.",
+ type:'go'},
+
+{act:4,scene:'hearing',tag:'November',who:'Seven men in good coats',
+ text:"The [[commission]] meets in Scranton, then in Philadelphia. Seven men.\\n\\nA judge. An army engineer. A mine expert. A businessman. A bishop. A government man. And the union man Roosevelt slipped in by calling him a sociologist.\\n\\nThey will hear 558 witnesses. Clarence Darrow will argue your case.\\n\\nYou do not get a vote. You cannot decide anything.\\n\\n**The only power you have left is picking who they listen to.**",
+ type:'go'},
+
+{act:4,scene:'hearing',tag:'Your five days',who:'Building the case',
+ text:"You get five hearing days. Nine people are willing to give [[testimony]].\\n\\nSome can prove a thing the board is able to fix — a wage, an hour, a [[checkweighman]] at the scale.\\n\\nSome can prove a thing the board cannot fix at all. The whole country will read it anyway.\\n\\nPick five.",
+ type:'case'},
+
+{act:4,scene:'darrow',tag:'February',who:'Clarence Darrow',
+ offer:['darrow',"I close on Monday. I can take one thing and hold it up until they cannot look at anything else.\\n\\nTell me which one. I will make it the only thing they remember."],
+ text:"He has read every page. He is very good. He only gets one ending.",
+ type:'choice',
+ record:"Darrow's closing argument for the miners ran for eight hours over two days. He called it the most satisfying work of his life to that point.",
+ opts:[
+  {l:'Lead on the weighing.',
+   why:['It is the oldest wound and the one thing a board can actually fix with a rule.',
+        'It is dull. No newspaper leads with a scale.'],
+   fx:{},lead:'WEIGHT'},
+  {l:'Lead on the pay.',
+   why:['It is what the men struck for and it is what they will measure you by.',
+        'The operators have five accountants ready and their books look good on paper.'],
+   fx:{},lead:'WAGE'},
+  {l:'Lead on the boys in the breakers.',
+   why:['It is the truest thing in the record and it will be quoted for fifty years.',
+        'The board cannot give you one cent for it.'],
+   fx:{},lead:'CHILD'}]},
+
+{act:4,scene:'award',tag:'March 21, 1903',who:'The award',
+ text:"Seven men sign it. Both sides promised to accept it before they knew what it said.\n\nThe men went back in October because the food ran out. They have been paid since. Whatever you do now, you are asking people who are eating to stop eating again.\\n\\nHere is what five months bought. This is the [[award]].",
+ type:'award'},
+
+{act:4,scene:'day',tag:'Afterward',who:'Mitchell Day',
+ text:"In the coal region they make October 29 a holiday. They call it Mitchell Day.\\n\\nYour picture hangs in kitchens across three counties. Men who cursed you in July name their sons after you.\\n\\nYou are thirty-three. You are the most admired labor leader in America.",
+ type:'go'},
+
+{act:4,scene:'you',tag:'What you could not see',who:'The part you missed',
+ text:"You think you lost the big one. By your own measure you did. They would not write the word [[union|union]] on any paper.\\n\\nBut something happened in that room in October that had never happened before.\\n\\nA president stood **between** the two sides. Not behind one of them.\\n\\nEvery strike after this one is argued in the shape you made.\\n\\nNobody will ever tell you that.",
+ type:'go'},
+
+{act:4,scene:'you',tag:'1908',who:'And the rest of it',
+ text:"You owned shares in coal companies while you ran the union.\\n\\nYou took money from a businessmen's group while you spoke for the men who worked for them.\\n\\nIt came out. The union later banned its officers from doing what you did.\\n\\nYou left in 1908. Your health was bad. So was your drinking. You died at forty-nine.\\n\\nThe holiday is still on the calendar.",
+ type:'end'}
 ];
 
 /* ═══ ENGINE ═══ Act I's, extended to dispatch Act II's ledger and Act III's
@@ -2098,15 +2449,21 @@ const art=document.getElementById('art'),sayEl=document.getElementById('say'),
  uiEl=document.getElementById('ui'),whoEl=document.getElementById('who'),
  statEl=document.getElementById('stat'),tagEl=document.getElementById('actTag'),
  ovl=document.getElementById('ovl'),cardsEl=document.getElementById('cards'),
- recEl=document.getElementById('record'),defEl=document.getElementById('def');
+ recEl=document.getElementById('record'),defEl=document.getElementById('def'),
+ mastEl=document.getElementById('mast');
 
-const ROMAN={1:'Act I',2:'Act II',3:'Act III'};
+const ROMAN={1:'Act I',2:'Act II',3:'Act III',4:'Act IV'};
+const MASTHEAD={1:1902,2:1902,3:1902,4:1903};
 const SCENES={chain:scChain,walkout:scWalkout,hall:scHall,rail:scRail,
  store:scStore,eviction:scEviction,relief:scRelief,riot:scRiot,room:scRoom,
  guard:scGuard,funeral:scFuneral,
  city:scCity,convention:scConvention,table:scTrio,yacht:scYacht,
  waiting:scWaiting,news:scNews,
- react:()=>scPortrait('you','room','JOHN MITCHELL','READING THE PAPER',{mood:'wry'})};
+ react:()=>scPortrait('you','room','JOHN MITCHELL','READING THE PAPER',{mood:'wry'}),
+ return:scReturn,hearing:scHearing,day:scDay,
+ darrow:()=>scPortrait('darrow','hearing','CLARENCE DARROW','COUNSEL FOR THE MINE WORKERS',{}),
+ you:()=>scPortrait('you','hearing','JOHN MITCHELL','UNITED MINE WORKERS',{}),
+ award:()=>scPaper('THE AWARD','Seven men decide what five months were worth')};
 /* scYacht and scConvention are unreached as written — the Corsair arrives through the
    newspaper and every convention beat carries a portrait. Both kept for a later act. */
 function draw(scene,x){
@@ -2131,12 +2488,13 @@ function bindGloss(){
 function show(){
   const b=BEATS[bi];
   // Acts I and II script the coal beat by beat. In Act III production and demand decide it.
-  if(b.act===3) tickCoal();
+  if(b.act>=3) tickCoal();
   else if(b.coal!==undefined) setCoal(b.coal);
   if(b.drain) S.FUND=Math.max(0,S.FUND-b.drain);
-  S.PRE = !!b.pre;
+  S.PRE = !!b.pre; S.act = b.act;
   drawBeat(b);
   tagEl.textContent=ROMAN[b.act]+' · '+b.tag;
+  mastEl.textContent='The Coal Strike Chronicle · '+MASTHEAD[b.act];
   whoEl.textContent=b.who;
   const inAct=BEATS.filter(x=>x.act===b.act);
   statEl.textContent='Beat '+(inAct.indexOf(b)+1)+' / '+inAct.length;
@@ -2166,6 +2524,13 @@ function show(){
     uiEl.innerHTML=card+b.opts.map((o,i)=>`<button class="btn" onclick="choose(${i})"><b>${parse(o.l)}</b>
       <i class="pro">Why you should — ${o.why[0]}</i>
       <i class="con" style="margin-top:4px">Why you should not — ${o.why[1]}</i></button>`).join('');
+  } else if(b.type==='case'){
+    uiEl.innerHTML=`<div class="wcount"><b>Hearing days</b><span id="slots"></span></div>
+     <div id="wits"></div><div class="find" id="find"></div>
+     <button class="go" id="casego" onclick="submitCase()">Call these five →</button>`;
+    drawCase(); drawFind();
+  } else if(b.type==='award'){
+    uiEl.innerHTML=awardUI();
   } else if(b.type==='conf'){
     uiEl.innerHTML = S.STANDING<30
       ? `<button class="go" onclick="noConference()">Wait for the telegram →</button>`
@@ -2184,6 +2549,7 @@ function bump_(k,v){ // one clamp rule for every meter
 function choose(i){
   const o=BEATS[bi].opts[i];
   if(o.flag) S.flags[o.flag]=true;
+  if(o.lead) S.flags.LEAD=o.lead;
   if(!o.rx){ // Act III's "Go yourself": a consequence with nobody to react to it
     prev={...S};
     for(const k in (o.fx||{})) bump_(k,o.fx[k]);
@@ -2221,12 +2587,16 @@ function dismiss(){ ovl.style.display='none'; advance(); }
 function advance(){ bi=Math.min(bi+1,BEATS.length-1); show(); }
 
 /* ═══ ACT BREAKS ═══ */
-const ACT2=BEATS.findIndex(b=>b.act===2), ACT3=BEATS.findIndex(b=>b.act===3);
+const ACT2=BEATS.findIndex(b=>b.act===2), ACT3=BEATS.findIndex(b=>b.act===3),
+      ACT4=BEATS.findIndex(b=>b.act===4);
 function beginActTwo(){ S.warms0=S.warms; bi=ACT2; show(); }
 function beginActThree(){ bi=ACT3; show(); }
+// The men going back is Act IV's opening event, not an initializer: the fields empty
+// out and the country needs less coal in spring than it did in December.
+function beginActFour(){ prev={...S}; S.FIELD=6; S.DEMAND=1.1; bi=ACT4; show(); }
 function finish(){
   const a=BEATS[bi].act;
-  a===3 ? finishActThree() : a===2 ? finishActTwo() : finishActOne();
+  a===4 ? finishActFour() : a===3 ? finishActThree() : a===2 ? finishActTwo() : finishActOne();
 }
 function endPaper(h,d,n,label,button){
   draw('paper',{h,d}); hud();
@@ -2287,15 +2657,17 @@ function noConference(){
   S.flags.NO_CONFERENCE=true;
   endPaper('NO CONFERENCE','President declines to intervene in the coal fields',
    "The telegram never comes.\n\nRoosevelt read the summer the same way the country did. He saw two mobs in a valley. No president spends himself on a side the public has already blamed, and yours was blamed in July.\n\nThe cities freeze. The men go back in November with nothing. The operators take back only the ones they want.\n\n**Ending — the door shut before October.** Everything after the walkout came down to what people thought of you. You spent that in the summer.",
-   'End of Act III', AGAIN);
+   'The strike is over', AGAIN);
 }
 
 function finishActThree(){
-  let h,d,n;
+  let h,d,n,over=false;
   if(S.flags.CONTRACTS_BROKEN){
+    over=true;
     h='INJUNCTION ISSUED';d='Federal court orders soft coal miners back to work';
     n="You won the strike in six weeks.\n\nThen a judge issued the order. Men who had never seen an anthracite mine went to jail for walking out to help you. The union spends the next several years in court. It does not come out the same size.\n\n**Ending — you won, and it cost the union.** The 1894 case was sitting there the whole time.";
   } else if(S.FUND<=0){
+    over=true;
     h='RELIEF EXHAUSTED';d='No payments this week, union announces';
     n="The board will meet in November. Your families cannot wait that long.\n\nMen went back before any terms were written. So the board is now setting wages for people who already gave up.\n\n**Ending — you ran out of weeks.**";
   } else if(S.hot*2+S.wry>=6){
@@ -2308,7 +2680,67 @@ function finishActThree(){
     h='THE COMMISSION IS APPOINTED';d='Both sides accept arbitration; men return Thursday';
     n="It is arranged. Not settled. Arranged.\n\nSeven men will meet for four months and decide what your five months were worth. You will not be in the room for most of it.\n\n**Act Three ends.**";
   }
-  endPaper(h,d,n,'End of Act III',AGAIN);
+  endPaper(h,d,n, over?'The strike is over':'End of Act III',
+   over?AGAIN:`<button class="go" onclick="beginActFour()">Begin Act IV · The board →</button>`);
+}
+
+function signIt(){
+  const a=award();
+  const good=a.wage+a.hours+a.weight+a.concil;
+  const rx={
+   cm:[good>=6?'GRUDGING':'ANGRY', good>=6?'It is on paper. It took five months and it is on paper.'
+      :'Five months of hunger for that. I will not say it was worth it.'],
+   lb:[a.wage===2?'GRUDGING':'ANGRY', a.wage===2?'Ten per cent is bread. We will take the bread.'
+      :'We are paid almost what we were paid in April.'],
+   op:['COLD','They did not get the word. That is the only line in it we care about.'],
+   pr:['CHEERING','Both sides kept their promise and accepted the ruling. That is the news.'],
+   ho:['GRUDGING','There is coal. That is all we ever wanted from any of you.']};
+  apply({},rx,"The award of March 21, 1903 gave a ten per cent increase, a nine-hour day for most trades, a board of conciliation, and no recognition of the union. Mitchell's own left wing called it a sellout.");
+}
+function refuseIt(){
+  S.flags.REFUSED=true;
+  const rx={
+   cm:['ANGRY','We are working. We are being paid. You want us to stop again, in April, over a piece of paper?'],
+   lb:['FURIOUS','My children ate this month. You are asking me to take that back for a word.'],
+   op:['COLD','He has broken his own agreement in front of the whole country. We need do nothing at all.'],
+   pr:['FURIOUS','Mr. Mitchell gave his word to the President and to the nation. He has now withdrawn it.'],
+   ho:['ANGRY','They promised. Everyone heard them promise.']};
+  apply({FIELD:-4,STANDING:-40,COUNTRY:-34},rx,
+   "Both sides agreed in advance to be bound by the award. No serious proposal to reject it was ever made. Mitchell campaigned for acceptance and the districts ratified it.");
+}
+
+function finishActFour(){
+  if(S.flags.REFUSED) return refusedEnd();
+  const NL='\n\n';
+  const t=tally(), a=award();
+  const legacy=t.CHILD+t.DANGER;
+  let n="**The strike is over. This is what it did.**"+NL;
+  n += a.wage===2 ? "The men got their ten per cent."+NL
+     : a.wage===1 ? "The men got half of what they asked."+NL
+     : "The men got no raise at all."+NL;
+  n += a.weight===2 ? "And they got a man of their own at the scale, which is the thing they had wanted since before you were born."+NL
+     : "The weigh house stayed exactly as it was."+NL;
+  n += legacy>=8
+     ? "The testimony you chose did something the award could not. The country read what a twelve-year-old does for a living, and it did not put the paper down. Pennsylvania tightened its child labour law in 1905. It is not in the award. It is in the record, and the record outlived everyone in it."+NL
+     : "You built a careful case about wages and hours. It won what it could win. Nobody outside those counties remembers a word of it."+NL;
+  n += "You never got [[recognition]]. No board was ever going to grant it. You knew that in May."+NL+
+   "They did give you a [[conciliation|standing board]] to bring problems to. That is less than a contract and more than nothing."+NL+
+   "**But a president stood between the owners and the workers, instead of behind the owners. Every strike since has been argued in that shape.**"+NL+
+   "You were not in the room when it was decided. You were the reason it went the way it did.";
+  endPaper('THE END OF IT','163 days · one winter · seven men', n, 'End of Act IV', AGAIN);
+}
+
+function refusedEnd(){
+  const NL='\n\n';
+  const n = "**You said no.**"+NL+
+   "You told them the award was not enough and asked the districts to go out again."+NL+
+   "Almost nobody came."+NL+
+   "The men had been back at work since October. They were being paid. It was April, and nobody in America needs much coal in April, so there was nothing to squeeze. The relief fund had been empty since February."+NL+
+   "And you had promised, in front of the President, in front of the whole country, that you would accept whatever the board decided. Everyone had heard you say it. That promise was the only thing you ever really owned, and you spent it in one afternoon."+NL+
+   "The operators did not have to lift a finger. The men who did walk out were blacklisted by name."+NL+
+   "**Ending — you refused the award.**"+NL+
+   "*What actually happened:* both sides had agreed in advance to be bound by the ruling. Mitchell argued for accepting it, and the districts voted yes. The award was thin and he took it, because the alternative was this.";
+  endPaper('MITCHELL REJECTS AWARD','Second strike called · districts do not answer', n, 'End of Act IV', AGAIN);
 }
 
 for(const k of ['cm','lb','pr','ho']) S.mood[k]=relBand(S.rel[k]);
