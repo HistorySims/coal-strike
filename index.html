@@ -323,6 +323,11 @@ section{background:var(--panel);padding:9px 11px 12px;flex:1 1 auto;overflow-y:a
 .wit .rl{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;display:block;}
 .wit .ln{font-size:10.4px;font-style:italic;line-height:1.32;margin-top:3px;display:block;}
 .wit .tags{display:block;margin-top:3px;}
+.wit .sy{display:block;margin:5px 0 1px;border-left:2px solid var(--rust);padding-left:8px;}
+.wit .sy>span{display:block;font-size:10.4px;font-style:italic;line-height:1.36;
+ color:#4a3d2e;margin-bottom:4px;}
+.wit .sy>span:last-child{margin-bottom:0;}
+.wit .sy .gl{display:inline;font-style:italic;}
 .tg{display:inline-block;font-size:7.6px;letter-spacing:.6px;text-transform:uppercase;
  border:1px solid #8a7a5c;padding:1px 4px;margin:2px 3px 0 0;color:#5c4a33;}
 .tg.risk{border-color:#a3231a;color:#8c1d15;}
@@ -336,6 +341,24 @@ section{background:var(--panel);padding:9px 11px 12px;flex:1 1 auto;overflow-y:a
 .fr .st{flex:0 0 78px;text-align:right;font-size:9px;font-family:ui-monospace,Menlo,monospace;}
 .fr.no .bar{color:#8c1d15;} .fr.no .st{color:#8c1d15;}
 /* award */
+.rec{margin-top:11px;border-top:2px solid var(--ink);padding-top:7px;white-space:normal;}
+.rec>b{display:block;font-size:8.6px;letter-spacing:1.8px;text-transform:uppercase;
+ color:var(--rust);margin-bottom:5px;}
+.ri{border-bottom:1px dotted var(--line);padding:4px 0;}
+.ri:last-child{border-bottom:none;}
+.ri .rw{display:block;font-size:7.6px;letter-spacing:1.2px;text-transform:uppercase;
+ color:#7a644e;font-family:ui-monospace,Menlo,monospace;}
+.ri .rd{display:block;font-size:11.6px;line-height:1.34;}
+.ri .rf{display:block;font-size:8.8px;font-family:ui-monospace,Menlo,monospace;margin-top:2px;}
+.ri .rf i{font-style:normal;color:#6b5c44;}
+.ri .rf i.up{color:#2f5d34;} .ri .rf i.dn{color:#8c2f22;}
+.exp>b{display:block;font-size:8.6px;letter-spacing:1.8px;text-transform:uppercase;
+ color:var(--rust);margin-bottom:5px;}
+.exp textarea{width:100%;height:200px;font-family:ui-monospace,Menlo,Consolas,monospace;
+ font-size:9.6px;line-height:1.45;border:2px solid var(--ink);background:#fffdf3;
+ padding:7px;resize:vertical;color:var(--ink);}
+.expb{display:flex;gap:7px;margin:7px 0 5px;}
+#expmsg{font-size:10.2px;font-style:italic;line-height:1.35;color:#4a3b2c;margin-bottom:7px;}
 .doc{background:#fffdf3;border:3px double var(--ink);padding:12px 14px;}
 .doc h4{text-align:center;font-size:12px;letter-spacing:2.4px;text-transform:uppercase;
  color:var(--rust);margin-bottom:2px;}
@@ -343,9 +366,9 @@ section{background:var(--panel);padding:9px 11px 12px;flex:1 1 auto;overflow-y:a
 .doc .it{display:flex;gap:8px;padding:5px 0;border-bottom:1px dotted var(--line);}
 .doc .it:last-child{border-bottom:none;}
 .doc .it .k{flex:1;font-size:11.6px;}
-.doc .it .v{flex:0 0 108px;text-align:right;font-size:9.6px;font-weight:700;
+.doc .it .v{flex:0 0 146px;text-align:right;font-size:9.6px;font-weight:700;
  font-family:ui-monospace,Menlo,monospace;text-transform:uppercase;}
-.v.yes{color:#2f6b3a;} .v.part{color:#8a5115;} .v.no{color:#8c1d15;}
+.v.yes{color:#2f6b3a;} .v.na{color:#7a6d54;font-weight:400;} .v.part{color:#8a5115;} .v.no{color:#8c1d15;}
 
 .away{animation:away 11s linear infinite;}
 @keyframes away{0%{transform:translateY(296px) scale(1.4);opacity:0}
@@ -426,14 +449,32 @@ const GLOSS_NAME={checkweighman:'check-weighman',companystore:'company store',
  crossexam:'cross-examination',breakerboy:'breaker boy'};
 const parse=s=>s.replace(/\[\[(\w+)\|([^\]]+)\]\]/g,(m,k,d)=>`<span class="gl" data-k="${k}">${d}</span>`)
                 .replace(/\[\[(\w+)\]\]/g,(m,k)=>`<span class="gl" data-k="${k}">${k}</span>`);
+// Beat text may carry {{FLAG?text if set|text if not}} so a later act can tell the
+// truth about a choice an earlier one recorded.
+const fill=t=>String(t).replace(/\{\{(\w+)\?([^|}]*)\|([^}]*)\}\}/g,(m,f,y,n)=>S.flags[f]?y:n);
 const md=s=>parse(String(s).replace(/\\n/g,'\n')).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
                     .replace(/\*([^*]+)\*/g,'<em>$1</em>');
 
-/* ═══ STATE ═══ one object for all three acts; Acts II and III have no
-   initializer of their own. SPLIT is only moved by Act II; hot and wry only by
-   Act III's conference. COALF is the fractional coal Act III's tickCoal drives.
-   warms0 marks the I/II boundary so Act II's "cheered by his own" ending still
-   measures applause earned in Act II. */
+/* ═══ STATE ═══ one object for all four acts. Only Act I has an initializer;
+   every later act inherits whatever the player left behind. Which act touches what:
+
+     FIELD     I II III      men still out. Act IV sets it to 6 at the act break.
+     FUND      II III        weeks of food. Read by the Act II and Act III endings.
+     COUNTRY   I II III IV   public opinion. Read by the Act I, II and IV endings.
+     STANDING  I II III IV   your name. Also gates Roosevelt's conference in Act III.
+     MINES     I             flooded workings. Feeds production(), so one June order
+                             changes the coal in every act after it.
+     COAL      I II          scripted per beat.
+     COALF                   III IV  fractional coal; tickCoal drives it from
+     DEMAND                   production() against demand once the cold is the story.
+     SPLIT     II            union split. Act II's ending only.
+     warms     I II          cheers from your own men. Acts I and II endings only;
+     warms0                   marks the I/II boundary so Act II measures its own.
+     hot wry   III           temper in the room. Act III's ending only.
+     rel mood  all           the five voices, moved by every reaction payload.
+     PRE act   engine        which beat and which act the HUD is drawing.
+     flags     all           decisions a later act asks about, by name or through
+                             a {{FLAG?yes|no}} token in beat text. */
 const S={FIELD:78,FUND:19,COUNTRY:42,STANDING:50,MINES:100,SPLIT:0,act:1,
  COAL:8,COALF:8,DEMAND:2.2,PRE:false,
  rel:{cm:3,lb:-3,pr:0,ho:0},warms:0,warms0:0,hot:0,wry:0,flags:{},
@@ -545,7 +586,9 @@ function drawStrip(){
    <text x="12" y="101" font-size="${fitNote(note,7.4).toFixed(2)}" font-style="italic" fill="#6b5c44">${note}</text></svg>`;
 }
 // Scabs cannot run a colliery. Real output only starts once the line has largely broken.
-function production(){ return Math.max(0,(100-S.FIELD)/100 - 0.20) * 1.9; }
+function production(){
+  return Math.max(0,(100-S.FIELD)/100 - 0.20) * 1.9 * (S.MINES/100);
+}
 let prevCoal = 8;
 // Acts I and II script the coal per beat; Act III lets production and demand decide it.
 function setCoal(v){ prevCoal=S.COAL; S.COALF=v; S.COAL=v; }
@@ -1670,6 +1713,7 @@ function outFaces(){
 }
 
 function deliver(){
+  if(picked.size) note('Filed the demands: '+TERMS.filter(t=>picked.has(t.id)).map(t=>t.t).join('; '));
   if(!picked.size){ whisper({t:'nothing',fl:'You cannot hand them a blank sheet.',ou:'—'},true); return; }
   const sc=scores();
   const rx={
@@ -1761,6 +1805,8 @@ function bump(id,d){
   alloc[id]=n; drawLedger(); bindGloss();
 }
 function deliverLedger(){
+  note('Paid out the relief: '+LINES.map(l=>l.t.toLowerCase()+' '+alloc[l.id]).join(', ')+
+       ' \u2014 '+fedCount()+' of 16 families fed');
   const sc=ledScores();
   const rx={
    cm:[bandOf(sc.cm), sc.cm<=-3?'"You left the arrested men to the county and the widows to a hat. We noticed."'
@@ -1863,13 +1909,14 @@ function confUI(){
 function conferee(i){
   if(conf>=PROVOCATIONS.length) return;
   const p=PROVOCATIONS[conf], t=p.tones[i], T=TONE[t.t];
+  note('Answered Baer '+(conf+1)+' of 5, '+T.lab.toLowerCase()+': "'+t.say+'"');
   prev={...S};
   if(t.t==='hot'){ S.STANDING=Math.max(0,S.STANDING-HOT_COST[Math.min(S.hot,4)]); S.hot++; }
   else { S.STANDING=Math.max(0,Math.min(100,S.STANDING+T.st)); if(t.t==='wry') S.wry++; }
   for(const [k,v] of [['cm',T.cm],['lb',T.lb],['pr',T.pr],['ho',T.ho]])
     S.rel[k]=Math.max(-20,Math.min(20,S.rel[k]+v));
   for(const k of ['cm','lb','pr','ho']) S.mood[k]=relBand(S.rel[k]);
-  conf++;
+  logFx(); conf++;
   document.getElementById('art').innerHTML = t.t==='calm'
    ? scPortrait('tr','room','THEODORE ROOSEVELT','PRESIDENT OF THE UNITED STATES',{mood:'calm'})
    : scPortrait('you','room','JOHN MITCHELL','UNITED MINE WORKERS',
@@ -1883,6 +1930,9 @@ function conferee(i){
 }
 function confEnd(){
   const temper=S.hot*2+S.wry;
+  note(temper>=6 ? 'Left the room having answered him hot, and been heard doing it'
+     : temper===0 ? 'Left the room having said nothing anyone could quote'
+     : 'Left the room having picked your moments');
   const rx = temper>=6 ? {
     cm:['CHEERING','He said it right back, in that house, to his face. Every town heard about it.'],
     lb:['CHEERING','He did not sit still and take it. Not once.'],
@@ -1982,30 +2032,57 @@ const FINDINGS=[['WAGE','What a man is paid'],['HOURS','How long a shift is'],
 const WITNESSES=[
  {id:'coll',nm:'Henry Coll',rl:'Contract miner, 24 years',
   ln:'"I have sent up coal for twenty-four years. I have never once been told what it weighed."',
+  says:['I fill a car with coal. The boss looks at it and says how much of it is rock. That part I am not paid for.',
+   'He does not weigh it. There is no scale I can see. He says a number and writes it down.',
+   'A [[ton]] is two thousand pounds everywhere else in America. In our mine it is more than that, and they still call it one ton.'],
   g:{WAGE:2,WEIGHT:3},risk:0},
  {id:'books',nm:'A company clerk',rl:'Brought the pay books with him',
   ln:'"These are their own ledgers. I only ask the board to read them."',
+  says:['I kept this book for six years. Every line in it is in my own hand.',
+   'Here is one man for one month. Now here is what the company took back out of it. Powder. Oil. His rent. The doctor. The blacksmith.',
+   'He worked twenty-six days. When it was all taken out, the company owed him one dollar and sixty cents.'],
   g:{WAGE:3,HOURS:2},risk:0,note:'Dry. Nobody will cry. The numbers do not move.'},
  {id:'boy',nm:'Andrew Chippie',rl:'[[breakerboy|Breaker boy]], twelve years old',
   ln:'"I pick slate. My hands bleed in winter. I have not been to school."',
+  says:['I sit on a board over the chute. The coal runs past under me and I pull the rock out of it with my hands.',
+   'I start at seven in the morning and stop at six. I get forty cents a day.',
+   'My father was killed down there. The company says he still owed them money, so they take it out of my pay.'],
   g:{CHILD:5,DANGER:1},risk:0,note:'Wins you nothing in the award. Every paper in America will print it.'},
  {id:'widow',nm:'Mrs. Kudrick',rl:'Widow, three children',
   ln:'"They brought him up in the cage. The company sent a bill for the powder he had not used."',
+  says:['He went down at seven in the morning. At four they carried him up.',
+   'Nobody from the company came to the house. No money came either. There is no law that makes them pay me anything.',
+   'Two weeks after, a paper came in the mail. It was a bill for the powder he had bought and not used.'],
   g:{DANGER:4,WAGE:1},risk:1,riskLn:'Their lawyer will suggest her husband was careless.'},
  {id:'doc',nm:'A colliery doctor',rl:'Paid by the company',
   ln:'"I signed the certificates. I counted four hundred and eleven that year."',
+  says:['The company pays me. It takes fifty cents a month out of every man\'s wages and hands it to me.',
+   'When a man is killed, I sign the paper that says how he died. That year I signed four hundred and eleven of them.',
+   'Most of them are roof falls. A piece of rock lets go over your head. There is no warning and there is nothing to hear.'],
   g:{DANGER:3,CHILD:1},risk:1,riskLn:'He still works for them. He may soften it on the stand.'},
  {id:'boss',nm:'A docking boss',rl:'Hostile witness',
   ln:'"I decide what is rock. I do not have to explain it to anybody."',
+  says:['I stand at the top of the [[colliery|mine]] and I watch the cars come up.',
+   'If I think there is too much rock in a car, I [[docking|dock]] it. Sometimes part of it. Sometimes the whole car.',
+   'No, I do not weigh anything. I have done this eleven years. I know what I am looking at.'],
   g:{WEIGHT:4},risk:2,riskLn:'A hostile witness can turn. In [[crossexam|cross-examination]] he may make the whole system sound fair.'},
  {id:'super',nm:'A superintendent who quit',rl:'Ran a colliery for nine years',
   ln:'"I was told what tonnage to report. I reported it."',
+  says:['Each month the head office told me how much coal the mine should send out. I made the numbers match what they asked for.',
+   'The men worked ten hours. Some days twelve. Their pay did not start until they reached the coal, and the walk in is long.',
+   'I quit because I was tired of putting my name to it.'],
   g:{WEIGHT:2,HOURS:3},risk:1,riskLn:'They will call him a disgruntled man with a grudge.'},
  {id:'priest',nm:'Father Curran',rl:'Parish priest, Wilkes-Barre',
   ln:'"I have buried more men from that colliery than I have married."',
+  says:['I have been in Wilkes-Barre eleven years. I know every family on my street by name.',
+   'I have buried men and I have buried boys. The boys were not killed in the mine. They were killed up top, in the [[breakerboy|breaker]] machinery.',
+   'Their mothers ask me why it happened. In eleven years I have never had an answer for them.'],
   g:{DANGER:2,CHILD:2},risk:0},
  {id:'self',nm:'John Mitchell',rl:'Yourself, under oath',
   ln:'"I will answer for the union. I ask the board to say plainly that it exists."',
+  says:['I speak for one hundred and forty-seven thousand men. They elected me and I answer to them.',
+   'We did not ask for anything the owners cannot pay. We asked to be weighed honestly and paid for the coal we dig.',
+   'You may write down that this [[union]] does not exist. The men know that it does. They stayed out five months to prove it.'],
   g:{UNION:4,WAGE:1},risk:2,riskLn:'Five days of [[crossexam|cross-examination]] about every stone thrown since May.'}];
 const SLOTS=5;
 const called=new Set();
@@ -2016,7 +2093,6 @@ function tally(){
     for(const k in w.g) t[k]+=w.g[k];
     if(w.risk===2){ t.WAGE-=1; } });
   if(S.flags.LEAD) t[S.flags.LEAD]+=3;
-  t.OPS = 3;                       // the operators put on their own case, always
   t.WAGE=Math.max(0,t.WAGE-2); t.HOURS=Math.max(0,t.HOURS-1);
   return t;
 }
@@ -2027,7 +2103,9 @@ function drawCase(){
     return `<div class="wit ${on?'on':''} ${full?'off':''}" data-id="${w.id}">
      <div class="bx">${on?'✕':''}</div>
      <div><span class="nm">${w.nm}</span><span class="rl">${parse(w.rl)}</span>
-      <span class="ln">${w.ln}</span><span class="tags">
+      <span class="ln">${w.ln}</span>
+      ${w.says?`<span class="sy">${w.says.map(l=>`<span>${parse(l)}</span>`).join('')}</span>`:''}
+      <span class="tags">
       ${Object.keys(w.g).map(k=>`<span class="tg">${FINDINGS.find(f=>f[0]===k)[1]}</span>`).join('')}
       ${w.risk?`<span class="tg risk">risk</span>`:''}</span>
       ${w.note?`<span class="ln" style="color:#8a5115">${w.note}</span>`:''}
@@ -2051,8 +2129,8 @@ function drawFind(){
      <div class="st">${st}</div></div>`;}).join('');
 }
 function submitCase(){
+  note('Called five witnesses: '+WITNESSES.filter(w=>called.has(w.id)).map(w=>w.nm).join(', '));
   const t=tally();
-  S.flags.CASE=t;
   const strong=FINDINGS.filter(([k])=>k!=='UNION'&&t[k]>=6).length;
   const rx={
    cm:[strong>=3?'GRUDGING':'ANGRY', strong>=3?'He put the weigh house on the record. Twenty years we asked for that.'
@@ -2064,36 +2142,73 @@ function submitCase(){
       :'The miners made a careful case, and a dull one.'],
    ho:[t.DANGER>=5?'GRUDGING':'COLD', t.DANGER>=5?'We did not know they died at that rate. Nobody told us.'
       :'We only want to know what it does to the price.']};
-  apply({},rx,"The commission heard 558 witnesses over three months. Clarence Darrow argued for the miners. The testimony of the breaker boys did not change the award at all, and it changed the country.");
+  apply({COUNTRY: t.CHILD>=5?7:t.DANGER>=5?4:0},rx,"The commission heard 558 witnesses over three months. Clarence Darrow argued for the miners. The testimony of the breaker boys did not change the award at all, and it changed the country.");
 }
 
 /* ═══ THE AWARD ═══ */
-function award(){
-  // Recomputed, not read from S.flags.CASE: Darrow picks what to lead on a beat after
-  // the witnesses are called, and tally() is where that choice is worth anything.
-  const t=tally();
-  const yes=(v)=>v>=6?2:v>=3?1:0;
-  return {
-   wage:yes(t.WAGE), hours:yes(t.HOURS), weight:yes(t.WEIGHT),
-   concil:(yes(t.WAGE)+yes(t.HOURS))>=2?1:0, union:0,
-   child:t.CHILD, danger:t.DANGER};
+// What the strike is worth at the table once the hearing is over. Roosevelt appointed
+// this board and a judge chairs it: it reads the room as well as the record.
+function leverage(){
+  const held = S.HELD===undefined ? S.FIELD : S.HELD;
+  let v=0;
+  v += held>=60?2 : held>=42?1 : held<25?-2 : 0;        // how much of the line reached October
+  v += S.STANDING>=70?2 : S.STANDING>=45?1 : S.STANDING<25?-2 : 0;
+  v += S.COUNTRY>=65?1 : S.COUNTRY<35?-1 : 0;
+  v += S.flags.SENT_DEPUTIES ? 0                        // nobody in that room was you
+     : S.hot*2+S.wry>=6 ? -2                            // Act III promised the smaller version
+     : S.hot+S.wry===0 ? 2 : 1;
+  v += Math.abs(S.SPLIT)>20 ? -1 : 0;                   // a split union bargains badly
+  v += picked.has('w50') ? (S.STANDING>=65 ? 1 : -2) : 0;  // the moon: carried it, or did not
+  return v;
 }
+function award(){
+  const t=tally(), L=leverage(), asked=id=>picked.has(id);
+  // Leverage priced in the same points as evidence, so the two argue with each other.
+  // Wages follow power. The scale is a finding of fact and mostly follows the record.
+  const LP=L*1.3;
+  const band=v=>v>=9?3 : v>=6?2 : v>=3?1 : 0;
+  const line=(v,cap)=>Math.max(0,Math.min(cap,v));
+  // The board cannot award a higher rate than you put in front of it in May. Backdating
+  // is not a higher rate, so the real 1903 result — ten per cent, retroactive — stays
+  // reachable from the twenty per cent the men actually voted for.
+  const wageCap = asked('w20')||asked('w50') ? 3 : asked('w10') ? 1 : -1;
+  return {
+   wage:   wageCap<0 ? -1 : line(band(t.WAGE   + LP*1.15), wageCap),
+   hours:  asked('h8')    ? line(band(t.HOURS  + LP), 3)      : -1,
+   weight: asked('scale') ? line(band(t.WEIGHT + LP*0.55), 3) : -1,
+   store:  asked('store') ? (L>=4 ? 1 : 0) : -1,
+   back:   asked('back')  ? 0 : -1,
+   concil: L>=6 ? 2 : L>=3 ? 1 : 0,   // the one ongoing relationship, and the first thing lost
+   union:  asked('rec') ? 0 : -1,
+   child:t.CHILD, danger:t.DANGER, lev:L};
+}
+// 0-12. Lines the board never heard count nothing rather than counting against you.
+const awardWeight=a=>['wage','hours','weight','concil','store']
+  .reduce((n,k)=>n+Math.max(0,a[k]),0);
 function awardDoc(){
   const a=award();
+  const cls=v=>v<0?'na' : v===0?'no' : v>=2?'yes' : 'part';
   const row=(k,v,txt)=>`<div class="it"><div class="k">${k}</div>
-    <div class="v ${v===2?'yes':v===1?'part':'no'}">${txt}</div></div>`;
+    <div class="v ${cls(v)}">${txt}</div></div>`;
+  const NA='not before the board';
+  const WAGE=['no increase','up 5 per cent','up 10 per cent','up 10 per cent, backdated to November'];
+  const HOURS=['unchanged','nine hours for some trades','the nine hour day','nine hours, eight for engine and pump men'];
+  const WEIGHT=['unchanged','weighed where practical','a checkweighman where coal is paid by weight','a checkweighman at every colliery, paid by the men'];
+  const CONCIL=['refused','a standing board of six','a standing board, with an umpire named by a federal judge'];
+  let rows='';
+  rows+=row('Wages', a.wage, a.wage<0?NA:WAGE[a.wage]);
+  rows+=row('The working day', a.hours, a.hours<0?NA:HOURS[a.hours]);
+  rows+=row('Weighing the coal', a.weight, a.weight<0?NA:WEIGHT[a.weight]);
+  if(a.store>=0) rows+=row('The company store', a.store, a.store?'men may buy where they like':'refused');
+  if(a.back>=0)  rows+=row('Back pay for docked cars', 0, 'refused');
+  rows+=row('A standing board for disputes', a.concil, CONCIL[a.concil]);
+  rows+=row('Recognition of the union', a.union, a.union<0?'never asked for':'refused');
   return `<div class="doc"><h4>Award of the Commission</h4>
-   <div class="dt">Washington · March 21, 1903</div>
-   ${row('Wages', a.wage, a.wage===2?'up 10 per cent':a.wage===1?'up 5 per cent':'no increase')}
-   ${row('The working day', a.hours, a.hours===2?'nine hours':a.hours===1?'nine hours, some trades':'unchanged')}
-   ${row('Weighing the coal', a.weight, a.weight===2?'checkweighman allowed':a.weight===1?'weighed where practical':'unchanged')}
-   ${row('A standing board for disputes', a.concil, a.concil?'granted':'refused')}
-   ${row('Recognition of the union', 0, 'refused')}
-   </div>`;
+   <div class="dt">Washington · March 21, 1903</div>${rows}</div>`;
 }
 
 function awardUI(){
-  const a=award(), good=a.wage+a.hours+a.weight+a.concil, thin = good<=2;
+  const a=award(), good=awardWeight(a), thin = good<=3;
   return awardDoc()+
    `<button class="btn" style="margin-top:9px" onclick="signIt()"><b>Sign it.</b>
      <i class="pro">Why you should — ${thin
@@ -2131,7 +2246,7 @@ const BEATS=[
   {l:'The pump men stay at their posts.',
    why:['Keep the mines dry and the jobs still exist when this ends. The country notices a union that does not wreck things — and the only door out of this strike is Washington.',
         "But you have ordered starving men to protect the property of the company starving them. Baer gets his mines kept dry for free."],
-   fx:{FIELD:-15,COUNTRY:9,STANDING:13},flag:'PUMPS_HELD',
+   fx:{FIELD:-15,COUNTRY:9,STANDING:13},
    rx:{cm:['FURIOUS','"We go hungry so their water stays down. You come tell my wife that yourself."'],
        lb:['FURIOUS','"Every man underground knows what you just did. Not one of us forgets it."'],
        op:['COLD','"Mr. Mitchell has protected our property. He will get nothing whatever for it."'],
@@ -2303,7 +2418,7 @@ const BEATS=[
   {l:'Argue against it. We keep our contracts.',
    why:['A union that keeps its word is the only kind that survives in court. Break these contracts and you hand every judge in America the reason to break you.',
         'It is easy to have principles when you are not the one going hungry. Every man in that room knows it.'],
-   fx:{FIELD:-12,COUNTRY:9,STANDING:11},flag:'HELD_CONTRACTS',
+   fx:{FIELD:-12,COUNTRY:9,STANDING:11},
    rx:{cm:['GRUDGING','"A deal is a deal. I do not like it, and he is right."'],
        lb:['FURIOUS','"He will not spend their pay to save our children. He has never had to choose the other way."'],
        op:['COLD','"He just refused to use the only weapon he had. Give him nothing."'],
@@ -2362,7 +2477,7 @@ const BEATS=[
   {l:'Go yourself.',
    why:['Nobody else can say yes in that room. A union that sends someone else to the White House is telling the country it is not serious.',
         'You will be judged on your face, in a chair, with no time to think, against a man who has been practicing since May.'],
-   fx:{STANDING:4},flag:'WENT'},
+   fx:{STANDING:4}},
   {l:'Send your three vice-presidents instead.',
    why:['Three men can talk it over. None of them can be pushed into saying the thing that ruins it.',
         'Roosevelt asked for you. He will notice. So will every paper that prints the guest list.'],
@@ -2403,7 +2518,7 @@ const BEATS=[
  type:'go'},
 
 {act:4,scene:'hearing',tag:'Your five days',who:'Building the case',
- text:"You get five hearing days. Nine people are willing to give [[testimony]].\\n\\nSome can prove a thing the board is able to fix — a wage, an hour, a [[checkweighman]] at the scale.\\n\\nSome can prove a thing the board cannot fix at all. The whole country will read it anyway.\\n\\nPick five.",
+ text:"You get five hearing days. Nine people are willing to give [[testimony]].\\n\\nSome can prove a thing the board is able to fix — a wage, an hour, a [[checkweighman]] at the scale.\\n\\nSome can prove a thing the board cannot fix at all. The whole country will read it anyway.\\n\\nRead what each one will say. Then pick five.",
  type:'case'},
 
 {act:4,scene:'darrow',tag:'February',who:'Clarence Darrow',
@@ -2434,11 +2549,11 @@ const BEATS=[
  type:'go'},
 
 {act:4,scene:'you',tag:'What you could not see',who:'The part you missed',
- text:"You think you lost the big one. By your own measure you did. They would not write the word [[union|union]] on any paper.\\n\\nBut something happened in that room in October that had never happened before.\\n\\nA president stood **between** the two sides. Not behind one of them.\\n\\nEvery strike after this one is argued in the shape you made.\\n\\nNobody will ever tell you that.",
+ text:"You think you lost the big one. By your own measure you did. They would not write the word [[union|union]] on any paper.\\n\\nBut something happened in that room in October that had never happened before.\\n\\nA president stood **between** the two sides. Not behind one of them.\\n\\n{{REPUDIATED?It turned on a day in July when you stood up and condemned your own men out loud, and the country decided which of the two of you was the reasonable one.|It turned on the country looking at the two of you in October and not seeing two mobs. That was a near thing, and it was very nearly not true.}}\\n\\nEvery strike after this one is argued in the shape you made.\\n\\nNobody will ever tell you that.",
  type:'go'},
 
 {act:4,scene:'you',tag:'1908',who:'And the rest of it',
- text:"You owned shares in coal companies while you ran the union.\\n\\nYou took money from a businessmen's group while you spoke for the men who worked for them.\\n\\nIt came out. The union later banned its officers from doing what you did.\\n\\nYou left in 1908. Your health was bad. So was your drinking. You died at forty-nine.\\n\\nThe holiday is still on the calendar.",
+ text:"You owned shares in coal companies while you ran the union.\\n\\n{{TOOK_THE_MONEY?You took money from a businessmen's group while you spoke for the men who worked for them.|You turned down the businessmen's money in September, and went on sitting in their rooms for years anyway.}}\\n\\nIt came out. The union later banned its officers from doing what you did.\\n\\nYou left in 1908. Your health was bad. So was your drinking. You died at forty-nine.\\n\\nThe holiday is still on the calendar.",
  type:'end'}
 ];
 
@@ -2453,6 +2568,43 @@ const art=document.getElementById('art'),sayEl=document.getElementById('say'),
  mastEl=document.getElementById('mast');
 
 const ROMAN={1:'Act I',2:'Act II',3:'Act III',4:'Act IV'};
+const ACTNAME={1:'The Walkout',2:'The Long Summer',3:'The Cold',4:'The Board'};
+
+/* ═══ THE RECORD ═══ every decision, and what the meters did about it. Written as
+   the player goes, printed in the act-end paper, exported whole at the end. */
+const LOG=[];
+const MLABEL={FIELD:'Men out',FUND:'Food weeks',COUNTRY:'Public',
+ STANDING:'Your name',MINES:'Mines ok',SPLIT:'Union split'};
+const MFMT={}; METERS.forEach(([k,l,f])=>MFMT[k]=f);   // the HUD's own units
+const plain=t=>String(t).replace(/\[\[(\w+)\|([^\]]+)\]\]/g,'$2')
+  .replace(/\[\[(\w+)\]\]/g,'$1').replace(/\*\*?/g,'').replace(/&amp;/g,'&');
+function note(what,detail){
+  LOG.push({kind:'choice',act:S.act,when:(BEATS[bi]&&BEATS[bi].tag)||'',
+            what:plain(what),detail:plain(detail||''),fx:null});
+}
+// Called once the state has moved, so the entry carries what the choice actually cost.
+function logFx(){
+  const e=LOG[LOG.length-1];
+  if(!e || e.kind!=='choice' || e.fx) return;
+  const d={};
+  for(const k in MLABEL) if(S[k]!==prev[k]) d[k]=S[k]-prev[k];
+  e.fx=d;
+}
+const fxText=fx=>Object.keys(fx||{}).map(k=>
+  (fx[k]>0?'+':'')+fx[k]+' '+MLABEL[k]).join(' \u00b7 ');
+function fxHTML(fx){
+  const parts=Object.keys(fx||{}).map(k=>
+    `<i class="${fx[k]>0?'up':'dn'}">${fx[k]>0?'\u25b2':'\u25bc'} ${MLABEL[k]} ${Math.abs(fx[k])}</i>`);
+  return parts.length?parts.join(' &nbsp; '):'<i>no change to the meters</i>';
+}
+function actRecord(act){
+  const rows=LOG.filter(e=>e.kind==='choice' && e.act===act);
+  if(!rows.length) return '';
+  return `<div class="rec"><b>What you decided \u00b7 ${ROMAN[act]}</b>`+rows.map(e=>
+    `<div class="ri"><span class="rw">${e.when}</span>
+     <span class="rd">${e.what}</span>
+     <span class="rf">${fxHTML(e.fx)}</span></div>`).join('')+`</div>`;
+}
 const MASTHEAD={1:1902,2:1902,3:1902,4:1903};
 const SCENES={chain:scChain,walkout:scWalkout,hall:scHall,rail:scRail,
  store:scStore,eviction:scEviction,relief:scRelief,riot:scRiot,room:scRoom,
@@ -2498,7 +2650,7 @@ function show(){
   whoEl.textContent=b.who;
   const inAct=BEATS.filter(x=>x.act===b.act);
   statEl.textContent='Beat '+(inAct.indexOf(b)+1)+' / '+inAct.length;
-  sayEl.innerHTML=md(b.text + (b.note && S.flags.TENTS ? '\n\n'+b.note : ''));
+  sayEl.innerHTML=md(fill(b.text) + (b.note && S.flags.TENTS ? '\n\n'+b.note : ''));
   defEl.style.display='none'; hud();
   const card = b.offer ? personCard(b.offer[0], parse(b.offer[1]).replace(/\n/g,'<br>'), 0) : '';
   if(b.type==='builder'){
@@ -2534,6 +2686,8 @@ function show(){
   } else if(b.type==='conf'){
     uiEl.innerHTML = S.STANDING<30
       ? `<button class="go" onclick="noConference()">Wait for the telegram →</button>`
+      : S.flags.SENT_DEPUTIES
+      ? `<button class="go" onclick="deputiesGo()">Wait for the wire from Washington →</button>`
       : `<button class="go" onclick="startConf()">Go to Washington →</button>`;
   } else if(b.type==='end'){
     uiEl.innerHTML=`<button class="go" onclick="finish()">Read the paper →</button>`;
@@ -2550,10 +2704,11 @@ function choose(i){
   const o=BEATS[bi].opts[i];
   if(o.flag) S.flags[o.flag]=true;
   if(o.lead) S.flags.LEAD=o.lead;
+  note(o.l);
   if(!o.rx){ // Act III's "Go yourself": a consequence with nobody to react to it
     prev={...S};
     for(const k in (o.fx||{})) bump_(k,o.fx[k]);
-    hud(); advance(); return;
+    logFx(); hud(); advance(); return;
   }
   if(o.flag==='PUMPS_PULLED') draw('pump',true);
   setTimeout(()=>apply(o.fx,o.rx,BEATS[bi].record), o.flag==='PUMPS_PULLED'?2800:120);
@@ -2567,7 +2722,7 @@ function apply(fx,rx,record){
     S.mood[k]=relBand(S.rel[k]);
   }
   S.warms+=['cm','lb'].filter(k=>rx[k]&&rx[k][0]==='CHEERING').length;
-  hud();
+  logFx(); hud();
   const ord=ORDER.slice().sort((a,b)=>BAND[rx[a][0]].r-BAND[rx[b][0]].r);
   cardsEl.innerHTML=ord.map(k=>{
     const band=rx[k][0], hot=(band==='FURIOUS'||band==='ANGRY');
@@ -2577,6 +2732,19 @@ function apply(fx,rx,record){
       <q>${rx[k][1]}</q></div></div>`;}).join('');
   recEl.innerHTML=record?`<b>The record</b><br>${record}`:'';
   ovl.style.display='block'; ovl.scrollTop=0;
+}
+// You said you would send your three vice-presidents. This is that meeting: it happens,
+// and you are not in it, so there is no temper for you to keep or lose.
+function deputiesGo(){
+  note('The conference met in Washington without you');
+  const rx={
+   cm:['ANGRY','The one room that ever mattered and our own president was not standing in it.'],
+   lb:['ANGRY','He sent men to speak for the men who speak for us. That is two rooms away from me.'],
+   op:['COLD','Clerks. We addressed the President and let them take notes.'],
+   pr:['ANGRY','Mr. Mitchell was invited by name. Mr. Mitchell sent a delegation.'],
+   ho:['COLD','Somebody was in the room. We are still waiting to hear what came of it.']};
+  apply({COUNTRY:-8,STANDING:-6},rx,
+   "Roosevelt invited Mitchell and Baer personally. Mitchell went himself, and afterwards Roosevelt wrote that the only man in the room who behaved like a gentleman was the representative of the miners. That judgement is most of why the commission happened at all.");
 }
 function startConf(){
   conf=0; art.innerHTML=scTable('baer');
@@ -2593,18 +2761,124 @@ function beginActTwo(){ S.warms0=S.warms; bi=ACT2; show(); }
 function beginActThree(){ bi=ACT3; show(); }
 // The men going back is Act IV's opening event, not an initializer: the fields empty
 // out and the country needs less coal in spring than it did in December.
-function beginActFour(){ prev={...S}; S.FIELD=6; S.DEMAND=1.1; bi=ACT4; show(); }
+function beginActFour(){ prev={...S}; S.HELD=S.FIELD; S.FIELD=6; S.DEMAND=1.1; bi=ACT4; show(); }
 function finish(){
   const a=BEATS[bi].act;
   a===4 ? finishActFour() : a===3 ? finishActThree() : a===2 ? finishActTwo() : finishActOne();
 }
 function endPaper(h,d,n,label,button){
+  const meters={}; for(const k in MLABEL) if(k!=='SPLIT') meters[k]=S[k];
+  LOG.push({kind:'end',act:S.act,h,d,n:plain(n),meters,label});
   draw('paper',{h,d}); hud();
   whoEl.textContent='The Scranton Republican'; statEl.textContent=label;
-  sayEl.innerHTML=md(n); defEl.style.display='none';
+  sayEl.innerHTML=md(n)+actRecord(S.act); defEl.style.display='none';
   uiEl.innerHTML=button;
 }
-const AGAIN=`<button class="go" onclick="location.reload()">Play again ↻</button>`;
+const AGAIN=`<button class="go" onclick="exportLog()">Export the whole record ↓</button>`+
+ `<button class="go" style="margin-top:7px" onclick="location.reload()">Play again ↻</button>`;
+
+/* ═══ EXPORT ═══ the whole record as plain text a student can hand in */
+function awardLines(){
+  if(!S.flags.SIGNED && !S.flags.REFUSED) return [];
+  const box=document.createElement('div'); box.innerHTML=awardDoc();
+  return [...box.querySelectorAll('.it')].map(e=>
+    e.querySelector('.k').textContent.trim()+': '+e.querySelector('.v').textContent.trim());
+}
+function logText(){
+  const W=72, out=[];
+  const wrap=(t,ind)=>{
+    const pad=' '.repeat(ind); const lines=[];
+    String(t).split('\n').forEach(para=>{
+      let line=pad;
+      para.split(/\s+/).filter(Boolean).forEach(w=>{
+        if(line.length+w.length+1>W){ lines.push(line); line=pad+w; }
+        else line += (line.trim()?' ':'')+w;
+      });
+      lines.push(line);
+    });
+    return lines.map(l=>l.replace(/\s+$/,''));
+  };
+  out.push('THE COAL STRIKE CHRONICLE');
+  out.push('The anthracite strike of 1902 — a record of what you decided');
+  out.push('Played as John Mitchell, president of the United Mine Workers');
+  out.push('');
+  let act=0;
+  LOG.forEach(e=>{
+    if(e.act!==act){ act=e.act;
+      out.push(''); out.push('='.repeat(W));
+      out.push(ROMAN[act].toUpperCase()+' · '+ACTNAME[act].toUpperCase());
+      out.push('='.repeat(W)); out.push('');
+    }
+    if(e.kind==='choice'){
+      out.push('  '+(e.when||'—'));
+      wrap(e.what,4).forEach(l=>out.push(l));
+      out.push('      '+(fxText(e.fx)||'no change to the meters'));
+      out.push('');
+    } else {
+      out.push('  '+'-'.repeat(W-2));
+      out.push('  '+ROMAN[e.act].toUpperCase()+' ENDS — '+e.h);
+      out.push('  '+e.d);
+      out.push('');
+      out.push('  '+Object.keys(e.meters).map(k=>
+        MLABEL[k]+' '+(MFMT[k]?MFMT[k](e.meters[k]):e.meters[k])).join('   '));
+      out.push('');
+      wrap(e.n,2).forEach(l=>out.push(l));
+      out.push('');
+    }
+  });
+  const aw=awardLines();
+  if(aw.length){
+    out.push(''); out.push('='.repeat(W));
+    out.push('THE AWARD OF THE COMMISSION · WASHINGTON · MARCH 21, 1903');
+    out.push('='.repeat(W)); out.push('');
+    aw.forEach(l=>out.push('  '+l));
+    out.push('');
+    out.push('  '+(S.flags.REFUSED?'You refused it.':'You signed it.'));
+    out.push('');
+  }
+  out.push('='.repeat(W));
+  out.push('Anthracite 1902. Every line above was decided by the player.');
+  return out.join('\n');
+}
+function exportLog(){
+  const txt=logText();
+  const esc=txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  uiEl.innerHTML=`<div class="exp">
+    <b>The full record · ${LOG.filter(e=>e.kind==='choice').length} decisions</b>
+    <textarea id="logbox" readonly onclick="this.select()">${esc}</textarea>
+    <div class="expb">
+      <button class="go" onclick="copyLog()">Copy it</button>
+      <button class="go" onclick="downloadLog()">Download .txt</button></div>
+    <div id="expmsg">Click the text to select all of it. If the download does not start,
+      copying works everywhere.</div>
+    <button class="go" onclick="location.reload()">Play again ↻</button></div>`;
+  const t=document.getElementById('logbox'); if(t) t.scrollTop=0;
+}
+function expMsg(m){ const e=document.getElementById('expmsg'); if(e) e.textContent=m; }
+function copyLog(){
+  const t=document.getElementById('logbox');
+  const done=()=>expMsg('Copied. Paste it wherever you need it.');
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(logText()).then(done,()=>{ t.select(); 
+        expMsg(document.execCommand('copy')?'Copied.':'Select the text above and copy it by hand.'); });
+      return;
+    }
+  }catch(e){}
+  try{ t.select(); expMsg(document.execCommand('copy')?'Copied.':'Select the text above and copy it by hand.'); }
+  catch(e){ expMsg('Select the text above and copy it by hand.'); }
+}
+function downloadLog(){
+  try{
+    const blob=new Blob([logText()],{type:'text/plain;charset=utf-8'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='anthracite-1902-record.txt';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},1000);
+    expMsg('If nothing downloaded, this page cannot save files here — use Copy it instead.');
+  }catch(e){ expMsg('Downloads are blocked here. Use Copy it instead.'); }
+}
 
 function finishActOne(){
   let h,d,n,over=false;
@@ -2654,7 +2928,6 @@ function finishActTwo(){
 }
 
 function noConference(){
-  S.flags.NO_CONFERENCE=true;
   endPaper('NO CONFERENCE','President declines to intervene in the coal fields',
    "The telegram never comes.\n\nRoosevelt read the summer the same way the country did. He saw two mobs in a valley. No president spends himself on a side the public has already blamed, and yours was blamed in July.\n\nThe cities freeze. The men go back in November with nothing. The operators take back only the ones they want.\n\n**Ending — the door shut before October.** Everything after the walkout came down to what people thought of you. You spent that in the summer.",
    'The strike is over', AGAIN);
@@ -2673,6 +2946,9 @@ function finishActThree(){
   } else if(S.hot*2+S.wry>=6){
     h='BOTH SIDES REBUKED';d='President said to regard the parties as equally intemperate';
     n="You answered him. Every coal town heard about it. It felt like the only honest thing you did all year.\n\nRoosevelt walked out of that room saying both men were loud. The board still meets — the cold made that certain — but you will get the smaller version of everything. In the one room where they decided who was reasonable, you made it a question.\n\n**Act Three ends.** It was the truest thing you said, and it cost you the award.";
+  } else if(S.flags.SENT_DEPUTIES){
+    h='THE COMMISSION IS APPOINTED';d='Miners represented by delegation at the conference';
+    n="Your three vice-presidents sat in that room for an afternoon and said the careful thing every time.\n\nNobody remembers which of them said it. Roosevelt formed his opinion of this strike from the faces in front of him, and yours was not one of them.\n\n**Act Three ends.** The board still meets. You will get the version of everything that is handed to people who were not there.";
   } else if(S.hot+S.wry===0){
     h='THE COMMISSION IS APPOINTED';d='Miners accept arbitration without conditions';
     n="You sat there and let a man call you a murderer, and said nothing. It is the most useful thing you have ever done.\n\nRoosevelt writes later that only one man in that room acted like a gentleman. Your own men will read that line, and some of them will never forgive you for earning it.\n\n**Act Three ends.** Keeping quiet is not a virtue here. It is money, and you spent none of it.";
@@ -2685,20 +2961,22 @@ function finishActThree(){
 }
 
 function signIt(){
-  const a=award();
-  const good=a.wage+a.hours+a.weight+a.concil;
+  S.flags.SIGNED=true;
+  note('Signed the award');
+  const a=award(), good=awardWeight(a);
   const rx={
-   cm:[good>=6?'GRUDGING':'ANGRY', good>=6?'It is on paper. It took five months and it is on paper.'
+   cm:[good>=7?'GRUDGING':'ANGRY', good>=7?'It is on paper. It took five months and it is on paper.'
       :'Five months of hunger for that. I will not say it was worth it.'],
-   lb:[a.wage===2?'GRUDGING':'ANGRY', a.wage===2?'Ten per cent is bread. We will take the bread.'
+   lb:[a.wage>=2?'GRUDGING':'ANGRY', a.wage>=2?'Ten per cent is bread. We will take the bread.'
       :'We are paid almost what we were paid in April.'],
    op:['COLD','They did not get the word. That is the only line in it we care about.'],
    pr:['CHEERING','Both sides kept their promise and accepted the ruling. That is the news.'],
    ho:['GRUDGING','There is coal. That is all we ever wanted from any of you.']};
-  apply({},rx,"The award of March 21, 1903 gave a ten per cent increase, a nine-hour day for most trades, a board of conciliation, and no recognition of the union. Mitchell's own left wing called it a sellout.");
+  apply({COUNTRY:8,STANDING:good>=7?5:-3},rx,"The award of March 21, 1903 gave a ten per cent increase, a nine-hour day for most trades, a board of conciliation, and no recognition of the union. Mitchell's own left wing called it a sellout.");
 }
 function refuseIt(){
   S.flags.REFUSED=true;
+  note('Refused the award and called the men out again');
   const rx={
    cm:['ANGRY','We are working. We are being paid. You want us to stop again, in April, over a piece of paper?'],
    lb:['FURIOUS','My children ate this month. You are asking me to take that back for a word.'],
@@ -2715,15 +2993,26 @@ function finishActFour(){
   const t=tally(), a=award();
   const legacy=t.CHILD+t.DANGER;
   let n="**The strike is over. This is what it did.**"+NL;
-  n += a.wage===2 ? "The men got their ten per cent."+NL
+  n += a.wage>=3 ? "The men got their ten per cent, and the board backdated it to November. Five months of it paid as if they had never walked out."+NL
+     : a.wage===2 ? "The men got their ten per cent."+NL
      : a.wage===1 ? "The men got half of what they asked."+NL
-     : "The men got no raise at all."+NL;
-  n += a.weight===2 ? "And they got a man of their own at the scale, which is the thing they had wanted since before you were born."+NL
-     : "The weigh house stayed exactly as it was."+NL;
-  n += legacy>=8
+     : a.wage===0 ? "The men got no raise at all."+NL
+     : "You never put a wage in front of this board, so it never set one."+NL;
+  n += a.weight>=3 ? "And they got a man of their own on the scale at every colliery, paid out of their own pockets, which is the thing they had wanted since before you were born."+NL
+     : a.weight===2 ? "And they got a man of their own at the scale wherever coal is paid by weight, which is the thing they had wanted since before you were born."+NL
+     : a.weight===1 ? "The coal is to be weighed where weighing it is practical. The companies will decide where that is."+NL
+     : a.weight===0 ? "The weigh house stayed exactly as it was."+NL
+     : "You never asked for an honest scale in May, so nobody ruled on one in March. Twenty years of waiting, and it was not on the paper."+NL;
+  if(a.hours<0) n += "Nobody put the length of a shift in front of them either."+NL;
+  if(S.MINES<90) n += "The collieries that flooded in June are still being pumped out. Some of those men have no place to go back to, and they know which order did that."+NL;
+  n += legacy>=8 && S.COUNTRY>=45
      ? "The testimony you chose did something the award could not. The country read what a twelve-year-old does for a living, and it did not put the paper down. Pennsylvania tightened its child labour law in 1905. It is not in the award. It is in the record, and the record outlived everyone in it."+NL
+     : legacy>=8
+     ? "The testimony you chose was the truest thing in the record. But the country had already made up its mind about this strike in the summer, and it read a boy on the stand as a thing you had arranged. The law did not move."+NL
      : "You built a careful case about wages and hours. It won what it could win. Nobody outside those counties remembers a word of it."+NL;
-  n += "You never got [[recognition]]. No board was ever going to grant it. You knew that in May."+NL+
+  n += (a.union<0
+     ? "You never asked for [[recognition]]. It would have been refused, and you knew that in May — so you spent the ask on things a board could actually hand you."
+     : "You never got [[recognition]]. No board was ever going to grant it. You knew that in May.")+NL+
    "They did give you a [[conciliation|standing board]] to bring problems to. That is less than a contract and more than nothing."+NL+
    "**But a president stood between the owners and the workers, instead of behind the owners. Every strike since has been argued in that shape.**"+NL+
    "You were not in the room when it was decided. You were the reason it went the way it did.";
