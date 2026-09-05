@@ -323,6 +323,11 @@ section{background:var(--panel);padding:9px 11px 12px;flex:1 1 auto;overflow-y:a
 .wit .rl{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;display:block;}
 .wit .ln{font-size:10.4px;font-style:italic;line-height:1.32;margin-top:3px;display:block;}
 .wit .tags{display:block;margin-top:3px;}
+.wit .sy{display:block;margin:5px 0 1px;border-left:2px solid var(--rust);padding-left:8px;}
+.wit .sy>span{display:block;font-size:10.4px;font-style:italic;line-height:1.36;
+ color:#4a3d2e;margin-bottom:4px;}
+.wit .sy>span:last-child{margin-bottom:0;}
+.wit .sy .gl{display:inline;font-style:italic;}
 .tg{display:inline-block;font-size:7.6px;letter-spacing:.6px;text-transform:uppercase;
  border:1px solid #8a7a5c;padding:1px 4px;margin:2px 3px 0 0;color:#5c4a33;}
 .tg.risk{border-color:#a3231a;color:#8c1d15;}
@@ -1982,30 +1987,57 @@ const FINDINGS=[['WAGE','What a man is paid'],['HOURS','How long a shift is'],
 const WITNESSES=[
  {id:'coll',nm:'Henry Coll',rl:'Contract miner, 24 years',
   ln:'"I have sent up coal for twenty-four years. I have never once been told what it weighed."',
+  says:['I fill a car with coal. The boss looks at it and says how much of it is rock. That part I am not paid for.',
+   'He does not weigh it. There is no scale I can see. He says a number and writes it down.',
+   'A [[ton]] is two thousand pounds everywhere else in America. In our mine it is more than that, and they still call it one ton.'],
   g:{WAGE:2,WEIGHT:3},risk:0},
  {id:'books',nm:'A company clerk',rl:'Brought the pay books with him',
   ln:'"These are their own ledgers. I only ask the board to read them."',
+  says:['I kept this book for six years. Every line in it is in my own hand.',
+   'Here is one man for one month. Now here is what the company took back out of it. Powder. Oil. His rent. The doctor. The blacksmith.',
+   'He worked twenty-six days. When it was all taken out, the company owed him one dollar and sixty cents.'],
   g:{WAGE:3,HOURS:2},risk:0,note:'Dry. Nobody will cry. The numbers do not move.'},
  {id:'boy',nm:'Andrew Chippie',rl:'[[breakerboy|Breaker boy]], twelve years old',
   ln:'"I pick slate. My hands bleed in winter. I have not been to school."',
+  says:['I sit on a board over the chute. The coal runs past under me and I pull the rock out of it with my hands.',
+   'I start at seven in the morning and stop at six. I get forty cents a day.',
+   'My father was killed down there. The company says he still owed them money, so they take it out of my pay.'],
   g:{CHILD:5,DANGER:1},risk:0,note:'Wins you nothing in the award. Every paper in America will print it.'},
  {id:'widow',nm:'Mrs. Kudrick',rl:'Widow, three children',
   ln:'"They brought him up in the cage. The company sent a bill for the powder he had not used."',
+  says:['He went down at seven in the morning. At four they carried him up.',
+   'Nobody from the company came to the house. No money came either. There is no law that makes them pay me anything.',
+   'Two weeks after, a paper came in the mail. It was a bill for the powder he had bought and not used.'],
   g:{DANGER:4,WAGE:1},risk:1,riskLn:'Their lawyer will suggest her husband was careless.'},
  {id:'doc',nm:'A colliery doctor',rl:'Paid by the company',
   ln:'"I signed the certificates. I counted four hundred and eleven that year."',
+  says:['The company pays me. It takes fifty cents a month out of every man\'s wages and hands it to me.',
+   'When a man is killed, I sign the paper that says how he died. That year I signed four hundred and eleven of them.',
+   'Most of them are roof falls. A piece of rock lets go over your head. There is no warning and there is nothing to hear.'],
   g:{DANGER:3,CHILD:1},risk:1,riskLn:'He still works for them. He may soften it on the stand.'},
  {id:'boss',nm:'A docking boss',rl:'Hostile witness',
   ln:'"I decide what is rock. I do not have to explain it to anybody."',
+  says:['I stand at the top of the [[colliery|mine]] and I watch the cars come up.',
+   'If I think there is too much rock in a car, I [[docking|dock]] it. Sometimes part of it. Sometimes the whole car.',
+   'No, I do not weigh anything. I have done this eleven years. I know what I am looking at.'],
   g:{WEIGHT:4},risk:2,riskLn:'A hostile witness can turn. In [[crossexam|cross-examination]] he may make the whole system sound fair.'},
  {id:'super',nm:'A superintendent who quit',rl:'Ran a colliery for nine years',
   ln:'"I was told what tonnage to report. I reported it."',
+  says:['Each month the head office told me how much coal the mine should send out. I made the numbers match what they asked for.',
+   'The men worked ten hours. Some days twelve. Their pay did not start until they reached the coal, and the walk in is long.',
+   'I quit because I was tired of putting my name to it.'],
   g:{WEIGHT:2,HOURS:3},risk:1,riskLn:'They will call him a disgruntled man with a grudge.'},
  {id:'priest',nm:'Father Curran',rl:'Parish priest, Wilkes-Barre',
   ln:'"I have buried more men from that colliery than I have married."',
+  says:['I have been in Wilkes-Barre eleven years. I know every family on my street by name.',
+   'I have buried men and I have buried boys. The boys were not killed in the mine. They were killed up top, in the [[breakerboy|breaker]] machinery.',
+   'Their mothers ask me why it happened. In eleven years I have never had an answer for them.'],
   g:{DANGER:2,CHILD:2},risk:0},
  {id:'self',nm:'John Mitchell',rl:'Yourself, under oath',
   ln:'"I will answer for the union. I ask the board to say plainly that it exists."',
+  says:['I speak for one hundred and forty-seven thousand men. They elected me and I answer to them.',
+   'We did not ask for anything the owners cannot pay. We asked to be weighed honestly and paid for the coal we dig.',
+   'You may write down that this [[union]] does not exist. The men know that it does. They stayed out five months to prove it.'],
   g:{UNION:4,WAGE:1},risk:2,riskLn:'Five days of [[crossexam|cross-examination]] about every stone thrown since May.'}];
 const SLOTS=5;
 const called=new Set();
@@ -2027,7 +2059,9 @@ function drawCase(){
     return `<div class="wit ${on?'on':''} ${full?'off':''}" data-id="${w.id}">
      <div class="bx">${on?'✕':''}</div>
      <div><span class="nm">${w.nm}</span><span class="rl">${parse(w.rl)}</span>
-      <span class="ln">${w.ln}</span><span class="tags">
+      <span class="ln">${w.ln}</span>
+      ${w.says?`<span class="sy">${w.says.map(l=>`<span>${parse(l)}</span>`).join('')}</span>`:''}
+      <span class="tags">
       ${Object.keys(w.g).map(k=>`<span class="tg">${FINDINGS.find(f=>f[0]===k)[1]}</span>`).join('')}
       ${w.risk?`<span class="tg risk">risk</span>`:''}</span>
       ${w.note?`<span class="ln" style="color:#8a5115">${w.note}</span>`:''}
@@ -2403,7 +2437,7 @@ const BEATS=[
  type:'go'},
 
 {act:4,scene:'hearing',tag:'Your five days',who:'Building the case',
- text:"You get five hearing days. Nine people are willing to give [[testimony]].\\n\\nSome can prove a thing the board is able to fix — a wage, an hour, a [[checkweighman]] at the scale.\\n\\nSome can prove a thing the board cannot fix at all. The whole country will read it anyway.\\n\\nPick five.",
+ text:"You get five hearing days. Nine people are willing to give [[testimony]].\\n\\nSome can prove a thing the board is able to fix — a wage, an hour, a [[checkweighman]] at the scale.\\n\\nSome can prove a thing the board cannot fix at all. The whole country will read it anyway.\\n\\nRead what each one will say. Then pick five.",
  type:'case'},
 
 {act:4,scene:'darrow',tag:'February',who:'Clarence Darrow',
