@@ -348,9 +348,9 @@ section{background:var(--panel);padding:9px 11px 12px;flex:1 1 auto;overflow-y:a
 .doc .it{display:flex;gap:8px;padding:5px 0;border-bottom:1px dotted var(--line);}
 .doc .it:last-child{border-bottom:none;}
 .doc .it .k{flex:1;font-size:11.6px;}
-.doc .it .v{flex:0 0 108px;text-align:right;font-size:9.6px;font-weight:700;
+.doc .it .v{flex:0 0 146px;text-align:right;font-size:9.6px;font-weight:700;
  font-family:ui-monospace,Menlo,monospace;text-transform:uppercase;}
-.v.yes{color:#2f6b3a;} .v.part{color:#8a5115;} .v.no{color:#8c1d15;}
+.v.yes{color:#2f6b3a;} .v.na{color:#7a6d54;font-weight:400;} .v.part{color:#8a5115;} .v.no{color:#8c1d15;}
 
 .away{animation:away 11s linear infinite;}
 @keyframes away{0%{transform:translateY(296px) scale(1.4);opacity:0}
@@ -2120,32 +2120,69 @@ function submitCase(){
 }
 
 /* ═══ THE AWARD ═══ */
-function award(){
-  // Recomputed, not read from S.flags.CASE: Darrow picks what to lead on a beat after
-  // the witnesses are called, and tally() is where that choice is worth anything.
-  const t=tally();
-  const yes=(v)=>v>=6?2:v>=3?1:0;
-  return {
-   wage:yes(t.WAGE), hours:yes(t.HOURS), weight:yes(t.WEIGHT),
-   concil:(yes(t.WAGE)+yes(t.HOURS))>=2?1:0, union:0,
-   child:t.CHILD, danger:t.DANGER};
+// What the strike is worth at the table once the hearing is over. Roosevelt appointed
+// this board and a judge chairs it: it reads the room as well as the record.
+function leverage(){
+  const held = S.HELD===undefined ? S.FIELD : S.HELD;
+  let v=0;
+  v += held>=60?2 : held>=42?1 : held<25?-2 : 0;        // how much of the line reached October
+  v += S.STANDING>=70?2 : S.STANDING>=45?1 : S.STANDING<25?-2 : 0;
+  v += S.COUNTRY>=65?1 : S.COUNTRY<35?-1 : 0;
+  v += S.flags.SENT_DEPUTIES ? 0                        // nobody in that room was you
+     : S.hot*2+S.wry>=6 ? -2                            // Act III promised the smaller version
+     : S.hot+S.wry===0 ? 2 : 1;
+  v += Math.abs(S.SPLIT)>20 ? -1 : 0;                   // a split union bargains badly
+  v += picked.has('w50') ? (S.STANDING>=65 ? 1 : -2) : 0;  // the moon: carried it, or did not
+  return v;
 }
+function award(){
+  const t=tally(), L=leverage(), asked=id=>picked.has(id);
+  // Leverage priced in the same points as evidence, so the two argue with each other.
+  // Wages follow power. The scale is a finding of fact and mostly follows the record.
+  const LP=L*1.3;
+  const band=v=>v>=9?3 : v>=6?2 : v>=3?1 : 0;
+  const line=(v,cap)=>Math.max(0,Math.min(cap,v));
+  // The board cannot award a higher rate than you put in front of it in May. Backdating
+  // is not a higher rate, so the real 1903 result — ten per cent, retroactive — stays
+  // reachable from the twenty per cent the men actually voted for.
+  const wageCap = asked('w20')||asked('w50') ? 3 : asked('w10') ? 1 : -1;
+  return {
+   wage:   wageCap<0 ? -1 : line(band(t.WAGE   + LP*1.15), wageCap),
+   hours:  asked('h8')    ? line(band(t.HOURS  + LP), 3)      : -1,
+   weight: asked('scale') ? line(band(t.WEIGHT + LP*0.55), 3) : -1,
+   store:  asked('store') ? (L>=4 ? 1 : 0) : -1,
+   back:   asked('back')  ? 0 : -1,
+   concil: L>=6 ? 2 : L>=3 ? 1 : 0,   // the one ongoing relationship, and the first thing lost
+   union:  asked('rec') ? 0 : -1,
+   child:t.CHILD, danger:t.DANGER, lev:L};
+}
+// 0-12. Lines the board never heard count nothing rather than counting against you.
+const awardWeight=a=>['wage','hours','weight','concil','store']
+  .reduce((n,k)=>n+Math.max(0,a[k]),0);
 function awardDoc(){
   const a=award();
+  const cls=v=>v<0?'na' : v===0?'no' : v>=2?'yes' : 'part';
   const row=(k,v,txt)=>`<div class="it"><div class="k">${k}</div>
-    <div class="v ${v===2?'yes':v===1?'part':'no'}">${txt}</div></div>`;
+    <div class="v ${cls(v)}">${txt}</div></div>`;
+  const NA='not before the board';
+  const WAGE=['no increase','up 5 per cent','up 10 per cent','up 10 per cent, backdated to November'];
+  const HOURS=['unchanged','nine hours for some trades','the nine hour day','nine hours, eight for engine and pump men'];
+  const WEIGHT=['unchanged','weighed where practical','a checkweighman where coal is paid by weight','a checkweighman at every colliery, paid by the men'];
+  const CONCIL=['refused','a standing board of six','a standing board, with an umpire named by a federal judge'];
+  let rows='';
+  rows+=row('Wages', a.wage, a.wage<0?NA:WAGE[a.wage]);
+  rows+=row('The working day', a.hours, a.hours<0?NA:HOURS[a.hours]);
+  rows+=row('Weighing the coal', a.weight, a.weight<0?NA:WEIGHT[a.weight]);
+  if(a.store>=0) rows+=row('The company store', a.store, a.store?'men may buy where they like':'refused');
+  if(a.back>=0)  rows+=row('Back pay for docked cars', 0, 'refused');
+  rows+=row('A standing board for disputes', a.concil, CONCIL[a.concil]);
+  rows+=row('Recognition of the union', a.union, a.union<0?'never asked for':'refused');
   return `<div class="doc"><h4>Award of the Commission</h4>
-   <div class="dt">Washington · March 21, 1903</div>
-   ${row('Wages', a.wage, a.wage===2?'up 10 per cent':a.wage===1?'up 5 per cent':'no increase')}
-   ${row('The working day', a.hours, a.hours===2?'nine hours':a.hours===1?'nine hours, some trades':'unchanged')}
-   ${row('Weighing the coal', a.weight, a.weight===2?'checkweighman allowed':a.weight===1?'weighed where practical':'unchanged')}
-   ${row('A standing board for disputes', a.concil, a.concil?'granted':'refused')}
-   ${row('Recognition of the union', 0, 'refused')}
-   </div>`;
+   <div class="dt">Washington · March 21, 1903</div>${rows}</div>`;
 }
 
 function awardUI(){
-  const a=award(), good=a.wage+a.hours+a.weight+a.concil, thin = good<=2;
+  const a=award(), good=awardWeight(a), thin = good<=3;
   return awardDoc()+
    `<button class="btn" style="margin-top:9px" onclick="signIt()"><b>Sign it.</b>
      <i class="pro">Why you should — ${thin
@@ -2659,7 +2696,7 @@ function beginActTwo(){ S.warms0=S.warms; bi=ACT2; show(); }
 function beginActThree(){ bi=ACT3; show(); }
 // The men going back is Act IV's opening event, not an initializer: the fields empty
 // out and the country needs less coal in spring than it did in December.
-function beginActFour(){ prev={...S}; S.FIELD=6; S.DEMAND=1.1; bi=ACT4; show(); }
+function beginActFour(){ prev={...S}; S.HELD=S.FIELD; S.FIELD=6; S.DEMAND=1.1; bi=ACT4; show(); }
 function finish(){
   const a=BEATS[bi].act;
   a===4 ? finishActFour() : a===3 ? finishActThree() : a===2 ? finishActTwo() : finishActOne();
@@ -2753,17 +2790,16 @@ function finishActThree(){
 }
 
 function signIt(){
-  const a=award();
-  const good=a.wage+a.hours+a.weight+a.concil;
+  const a=award(), good=awardWeight(a);
   const rx={
-   cm:[good>=6?'GRUDGING':'ANGRY', good>=6?'It is on paper. It took five months and it is on paper.'
+   cm:[good>=7?'GRUDGING':'ANGRY', good>=7?'It is on paper. It took five months and it is on paper.'
       :'Five months of hunger for that. I will not say it was worth it.'],
-   lb:[a.wage===2?'GRUDGING':'ANGRY', a.wage===2?'Ten per cent is bread. We will take the bread.'
+   lb:[a.wage>=2?'GRUDGING':'ANGRY', a.wage>=2?'Ten per cent is bread. We will take the bread.'
       :'We are paid almost what we were paid in April.'],
    op:['COLD','They did not get the word. That is the only line in it we care about.'],
    pr:['CHEERING','Both sides kept their promise and accepted the ruling. That is the news.'],
    ho:['GRUDGING','There is coal. That is all we ever wanted from any of you.']};
-  apply({COUNTRY:8,STANDING:good>=6?5:-3},rx,"The award of March 21, 1903 gave a ten per cent increase, a nine-hour day for most trades, a board of conciliation, and no recognition of the union. Mitchell's own left wing called it a sellout.");
+  apply({COUNTRY:8,STANDING:good>=7?5:-3},rx,"The award of March 21, 1903 gave a ten per cent increase, a nine-hour day for most trades, a board of conciliation, and no recognition of the union. Mitchell's own left wing called it a sellout.");
 }
 function refuseIt(){
   S.flags.REFUSED=true;
@@ -2783,18 +2819,26 @@ function finishActFour(){
   const t=tally(), a=award();
   const legacy=t.CHILD+t.DANGER;
   let n="**The strike is over. This is what it did.**"+NL;
-  n += a.wage===2 ? "The men got their ten per cent."+NL
+  n += a.wage>=3 ? "The men got their ten per cent, and the board backdated it to November. Five months of it paid as if they had never walked out."+NL
+     : a.wage===2 ? "The men got their ten per cent."+NL
      : a.wage===1 ? "The men got half of what they asked."+NL
-     : "The men got no raise at all."+NL;
-  n += a.weight===2 ? "And they got a man of their own at the scale, which is the thing they had wanted since before you were born."+NL
-     : "The weigh house stayed exactly as it was."+NL;
+     : a.wage===0 ? "The men got no raise at all."+NL
+     : "You never put a wage in front of this board, so it never set one."+NL;
+  n += a.weight>=3 ? "And they got a man of their own on the scale at every colliery, paid out of their own pockets, which is the thing they had wanted since before you were born."+NL
+     : a.weight===2 ? "And they got a man of their own at the scale wherever coal is paid by weight, which is the thing they had wanted since before you were born."+NL
+     : a.weight===1 ? "The coal is to be weighed where weighing it is practical. The companies will decide where that is."+NL
+     : a.weight===0 ? "The weigh house stayed exactly as it was."+NL
+     : "You never asked for an honest scale in May, so nobody ruled on one in March. Twenty years of waiting, and it was not on the paper."+NL;
+  if(a.hours<0) n += "Nobody put the length of a shift in front of them either."+NL;
   if(S.MINES<90) n += "The collieries that flooded in June are still being pumped out. Some of those men have no place to go back to, and they know which order did that."+NL;
   n += legacy>=8 && S.COUNTRY>=45
      ? "The testimony you chose did something the award could not. The country read what a twelve-year-old does for a living, and it did not put the paper down. Pennsylvania tightened its child labour law in 1905. It is not in the award. It is in the record, and the record outlived everyone in it."+NL
      : legacy>=8
      ? "The testimony you chose was the truest thing in the record. But the country had already made up its mind about this strike in the summer, and it read a boy on the stand as a thing you had arranged. The law did not move."+NL
      : "You built a careful case about wages and hours. It won what it could win. Nobody outside those counties remembers a word of it."+NL;
-  n += "You never got [[recognition]]. No board was ever going to grant it. You knew that in May."+NL+
+  n += (a.union<0
+     ? "You never asked for [[recognition]]. It would have been refused, and you knew that in May — so you spent the ask on things a board could actually hand you."
+     : "You never got [[recognition]]. No board was ever going to grant it. You knew that in May.")+NL+
    "They did give you a [[conciliation|standing board]] to bring problems to. That is less than a contract and more than nothing."+NL+
    "**But a president stood between the owners and the workers, instead of behind the owners. Every strike since has been argued in that shape.**"+NL+
    "You were not in the room when it was decided. You were the reason it went the way it did.";
