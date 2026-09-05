@@ -341,6 +341,24 @@ section{background:var(--panel);padding:9px 11px 12px;flex:1 1 auto;overflow-y:a
 .fr .st{flex:0 0 78px;text-align:right;font-size:9px;font-family:ui-monospace,Menlo,monospace;}
 .fr.no .bar{color:#8c1d15;} .fr.no .st{color:#8c1d15;}
 /* award */
+.rec{margin-top:11px;border-top:2px solid var(--ink);padding-top:7px;white-space:normal;}
+.rec>b{display:block;font-size:8.6px;letter-spacing:1.8px;text-transform:uppercase;
+ color:var(--rust);margin-bottom:5px;}
+.ri{border-bottom:1px dotted var(--line);padding:4px 0;}
+.ri:last-child{border-bottom:none;}
+.ri .rw{display:block;font-size:7.6px;letter-spacing:1.2px;text-transform:uppercase;
+ color:#7a644e;font-family:ui-monospace,Menlo,monospace;}
+.ri .rd{display:block;font-size:11.6px;line-height:1.34;}
+.ri .rf{display:block;font-size:8.8px;font-family:ui-monospace,Menlo,monospace;margin-top:2px;}
+.ri .rf i{font-style:normal;color:#6b5c44;}
+.ri .rf i.up{color:#2f5d34;} .ri .rf i.dn{color:#8c2f22;}
+.exp>b{display:block;font-size:8.6px;letter-spacing:1.8px;text-transform:uppercase;
+ color:var(--rust);margin-bottom:5px;}
+.exp textarea{width:100%;height:200px;font-family:ui-monospace,Menlo,Consolas,monospace;
+ font-size:9.6px;line-height:1.45;border:2px solid var(--ink);background:#fffdf3;
+ padding:7px;resize:vertical;color:var(--ink);}
+.expb{display:flex;gap:7px;margin:7px 0 5px;}
+#expmsg{font-size:10.2px;font-style:italic;line-height:1.35;color:#4a3b2c;margin-bottom:7px;}
 .doc{background:#fffdf3;border:3px double var(--ink);padding:12px 14px;}
 .doc h4{text-align:center;font-size:12px;letter-spacing:2.4px;text-transform:uppercase;
  color:var(--rust);margin-bottom:2px;}
@@ -1695,6 +1713,7 @@ function outFaces(){
 }
 
 function deliver(){
+  if(picked.size) note('Filed the demands: '+TERMS.filter(t=>picked.has(t.id)).map(t=>t.t).join('; '));
   if(!picked.size){ whisper({t:'nothing',fl:'You cannot hand them a blank sheet.',ou:'—'},true); return; }
   const sc=scores();
   const rx={
@@ -1786,6 +1805,8 @@ function bump(id,d){
   alloc[id]=n; drawLedger(); bindGloss();
 }
 function deliverLedger(){
+  note('Paid out the relief: '+LINES.map(l=>l.t.toLowerCase()+' '+alloc[l.id]).join(', ')+
+       ' \u2014 '+fedCount()+' of 16 families fed');
   const sc=ledScores();
   const rx={
    cm:[bandOf(sc.cm), sc.cm<=-3?'"You left the arrested men to the county and the widows to a hat. We noticed."'
@@ -1888,13 +1909,14 @@ function confUI(){
 function conferee(i){
   if(conf>=PROVOCATIONS.length) return;
   const p=PROVOCATIONS[conf], t=p.tones[i], T=TONE[t.t];
+  note('Answered Baer '+(conf+1)+' of 5, '+T.lab.toLowerCase()+': "'+t.say+'"');
   prev={...S};
   if(t.t==='hot'){ S.STANDING=Math.max(0,S.STANDING-HOT_COST[Math.min(S.hot,4)]); S.hot++; }
   else { S.STANDING=Math.max(0,Math.min(100,S.STANDING+T.st)); if(t.t==='wry') S.wry++; }
   for(const [k,v] of [['cm',T.cm],['lb',T.lb],['pr',T.pr],['ho',T.ho]])
     S.rel[k]=Math.max(-20,Math.min(20,S.rel[k]+v));
   for(const k of ['cm','lb','pr','ho']) S.mood[k]=relBand(S.rel[k]);
-  conf++;
+  logFx(); conf++;
   document.getElementById('art').innerHTML = t.t==='calm'
    ? scPortrait('tr','room','THEODORE ROOSEVELT','PRESIDENT OF THE UNITED STATES',{mood:'calm'})
    : scPortrait('you','room','JOHN MITCHELL','UNITED MINE WORKERS',
@@ -1908,6 +1930,9 @@ function conferee(i){
 }
 function confEnd(){
   const temper=S.hot*2+S.wry;
+  note(temper>=6 ? 'Left the room having answered him hot, and been heard doing it'
+     : temper===0 ? 'Left the room having said nothing anyone could quote'
+     : 'Left the room having picked your moments');
   const rx = temper>=6 ? {
     cm:['CHEERING','He said it right back, in that house, to his face. Every town heard about it.'],
     lb:['CHEERING','He did not sit still and take it. Not once.'],
@@ -2104,6 +2129,7 @@ function drawFind(){
      <div class="st">${st}</div></div>`;}).join('');
 }
 function submitCase(){
+  note('Called five witnesses: '+WITNESSES.filter(w=>called.has(w.id)).map(w=>w.nm).join(', '));
   const t=tally();
   const strong=FINDINGS.filter(([k])=>k!=='UNION'&&t[k]>=6).length;
   const rx={
@@ -2542,6 +2568,43 @@ const art=document.getElementById('art'),sayEl=document.getElementById('say'),
  mastEl=document.getElementById('mast');
 
 const ROMAN={1:'Act I',2:'Act II',3:'Act III',4:'Act IV'};
+const ACTNAME={1:'The Walkout',2:'The Long Summer',3:'The Cold',4:'The Board'};
+
+/* ═══ THE RECORD ═══ every decision, and what the meters did about it. Written as
+   the player goes, printed in the act-end paper, exported whole at the end. */
+const LOG=[];
+const MLABEL={FIELD:'Men out',FUND:'Food weeks',COUNTRY:'Public',
+ STANDING:'Your name',MINES:'Mines ok',SPLIT:'Union split'};
+const MFMT={}; METERS.forEach(([k,l,f])=>MFMT[k]=f);   // the HUD's own units
+const plain=t=>String(t).replace(/\[\[(\w+)\|([^\]]+)\]\]/g,'$2')
+  .replace(/\[\[(\w+)\]\]/g,'$1').replace(/\*\*?/g,'').replace(/&amp;/g,'&');
+function note(what,detail){
+  LOG.push({kind:'choice',act:S.act,when:(BEATS[bi]&&BEATS[bi].tag)||'',
+            what:plain(what),detail:plain(detail||''),fx:null});
+}
+// Called once the state has moved, so the entry carries what the choice actually cost.
+function logFx(){
+  const e=LOG[LOG.length-1];
+  if(!e || e.kind!=='choice' || e.fx) return;
+  const d={};
+  for(const k in MLABEL) if(S[k]!==prev[k]) d[k]=S[k]-prev[k];
+  e.fx=d;
+}
+const fxText=fx=>Object.keys(fx||{}).map(k=>
+  (fx[k]>0?'+':'')+fx[k]+' '+MLABEL[k]).join(' \u00b7 ');
+function fxHTML(fx){
+  const parts=Object.keys(fx||{}).map(k=>
+    `<i class="${fx[k]>0?'up':'dn'}">${fx[k]>0?'\u25b2':'\u25bc'} ${MLABEL[k]} ${Math.abs(fx[k])}</i>`);
+  return parts.length?parts.join(' &nbsp; '):'<i>no change to the meters</i>';
+}
+function actRecord(act){
+  const rows=LOG.filter(e=>e.kind==='choice' && e.act===act);
+  if(!rows.length) return '';
+  return `<div class="rec"><b>What you decided \u00b7 ${ROMAN[act]}</b>`+rows.map(e=>
+    `<div class="ri"><span class="rw">${e.when}</span>
+     <span class="rd">${e.what}</span>
+     <span class="rf">${fxHTML(e.fx)}</span></div>`).join('')+`</div>`;
+}
 const MASTHEAD={1:1902,2:1902,3:1902,4:1903};
 const SCENES={chain:scChain,walkout:scWalkout,hall:scHall,rail:scRail,
  store:scStore,eviction:scEviction,relief:scRelief,riot:scRiot,room:scRoom,
@@ -2641,10 +2704,11 @@ function choose(i){
   const o=BEATS[bi].opts[i];
   if(o.flag) S.flags[o.flag]=true;
   if(o.lead) S.flags.LEAD=o.lead;
+  note(o.l);
   if(!o.rx){ // Act III's "Go yourself": a consequence with nobody to react to it
     prev={...S};
     for(const k in (o.fx||{})) bump_(k,o.fx[k]);
-    hud(); advance(); return;
+    logFx(); hud(); advance(); return;
   }
   if(o.flag==='PUMPS_PULLED') draw('pump',true);
   setTimeout(()=>apply(o.fx,o.rx,BEATS[bi].record), o.flag==='PUMPS_PULLED'?2800:120);
@@ -2658,7 +2722,7 @@ function apply(fx,rx,record){
     S.mood[k]=relBand(S.rel[k]);
   }
   S.warms+=['cm','lb'].filter(k=>rx[k]&&rx[k][0]==='CHEERING').length;
-  hud();
+  logFx(); hud();
   const ord=ORDER.slice().sort((a,b)=>BAND[rx[a][0]].r-BAND[rx[b][0]].r);
   cardsEl.innerHTML=ord.map(k=>{
     const band=rx[k][0], hot=(band==='FURIOUS'||band==='ANGRY');
@@ -2672,6 +2736,7 @@ function apply(fx,rx,record){
 // You said you would send your three vice-presidents. This is that meeting: it happens,
 // and you are not in it, so there is no temper for you to keep or lose.
 function deputiesGo(){
+  note('The conference met in Washington without you');
   const rx={
    cm:['ANGRY','The one room that ever mattered and our own president was not standing in it.'],
    lb:['ANGRY','He sent men to speak for the men who speak for us. That is two rooms away from me.'],
@@ -2702,12 +2767,118 @@ function finish(){
   a===4 ? finishActFour() : a===3 ? finishActThree() : a===2 ? finishActTwo() : finishActOne();
 }
 function endPaper(h,d,n,label,button){
+  const meters={}; for(const k in MLABEL) if(k!=='SPLIT') meters[k]=S[k];
+  LOG.push({kind:'end',act:S.act,h,d,n:plain(n),meters,label});
   draw('paper',{h,d}); hud();
   whoEl.textContent='The Scranton Republican'; statEl.textContent=label;
-  sayEl.innerHTML=md(n); defEl.style.display='none';
+  sayEl.innerHTML=md(n)+actRecord(S.act); defEl.style.display='none';
   uiEl.innerHTML=button;
 }
-const AGAIN=`<button class="go" onclick="location.reload()">Play again ↻</button>`;
+const AGAIN=`<button class="go" onclick="exportLog()">Export the whole record ↓</button>`+
+ `<button class="go" style="margin-top:7px" onclick="location.reload()">Play again ↻</button>`;
+
+/* ═══ EXPORT ═══ the whole record as plain text a student can hand in */
+function awardLines(){
+  if(!S.flags.SIGNED && !S.flags.REFUSED) return [];
+  const box=document.createElement('div'); box.innerHTML=awardDoc();
+  return [...box.querySelectorAll('.it')].map(e=>
+    e.querySelector('.k').textContent.trim()+': '+e.querySelector('.v').textContent.trim());
+}
+function logText(){
+  const W=72, out=[];
+  const wrap=(t,ind)=>{
+    const pad=' '.repeat(ind); const lines=[];
+    String(t).split('\n').forEach(para=>{
+      let line=pad;
+      para.split(/\s+/).filter(Boolean).forEach(w=>{
+        if(line.length+w.length+1>W){ lines.push(line); line=pad+w; }
+        else line += (line.trim()?' ':'')+w;
+      });
+      lines.push(line);
+    });
+    return lines.map(l=>l.replace(/\s+$/,''));
+  };
+  out.push('THE COAL STRIKE CHRONICLE');
+  out.push('The anthracite strike of 1902 — a record of what you decided');
+  out.push('Played as John Mitchell, president of the United Mine Workers');
+  out.push('');
+  let act=0;
+  LOG.forEach(e=>{
+    if(e.act!==act){ act=e.act;
+      out.push(''); out.push('='.repeat(W));
+      out.push(ROMAN[act].toUpperCase()+' · '+ACTNAME[act].toUpperCase());
+      out.push('='.repeat(W)); out.push('');
+    }
+    if(e.kind==='choice'){
+      out.push('  '+(e.when||'—'));
+      wrap(e.what,4).forEach(l=>out.push(l));
+      out.push('      '+(fxText(e.fx)||'no change to the meters'));
+      out.push('');
+    } else {
+      out.push('  '+'-'.repeat(W-2));
+      out.push('  '+ROMAN[e.act].toUpperCase()+' ENDS — '+e.h);
+      out.push('  '+e.d);
+      out.push('');
+      out.push('  '+Object.keys(e.meters).map(k=>
+        MLABEL[k]+' '+(MFMT[k]?MFMT[k](e.meters[k]):e.meters[k])).join('   '));
+      out.push('');
+      wrap(e.n,2).forEach(l=>out.push(l));
+      out.push('');
+    }
+  });
+  const aw=awardLines();
+  if(aw.length){
+    out.push(''); out.push('='.repeat(W));
+    out.push('THE AWARD OF THE COMMISSION · WASHINGTON · MARCH 21, 1903');
+    out.push('='.repeat(W)); out.push('');
+    aw.forEach(l=>out.push('  '+l));
+    out.push('');
+    out.push('  '+(S.flags.REFUSED?'You refused it.':'You signed it.'));
+    out.push('');
+  }
+  out.push('='.repeat(W));
+  out.push('Anthracite 1902. Every line above was decided by the player.');
+  return out.join('\n');
+}
+function exportLog(){
+  const txt=logText();
+  const esc=txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  uiEl.innerHTML=`<div class="exp">
+    <b>The full record · ${LOG.filter(e=>e.kind==='choice').length} decisions</b>
+    <textarea id="logbox" readonly onclick="this.select()">${esc}</textarea>
+    <div class="expb">
+      <button class="go" onclick="copyLog()">Copy it</button>
+      <button class="go" onclick="downloadLog()">Download .txt</button></div>
+    <div id="expmsg">Click the text to select all of it. If the download does not start,
+      copying works everywhere.</div>
+    <button class="go" onclick="location.reload()">Play again ↻</button></div>`;
+  const t=document.getElementById('logbox'); if(t) t.scrollTop=0;
+}
+function expMsg(m){ const e=document.getElementById('expmsg'); if(e) e.textContent=m; }
+function copyLog(){
+  const t=document.getElementById('logbox');
+  const done=()=>expMsg('Copied. Paste it wherever you need it.');
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(logText()).then(done,()=>{ t.select(); 
+        expMsg(document.execCommand('copy')?'Copied.':'Select the text above and copy it by hand.'); });
+      return;
+    }
+  }catch(e){}
+  try{ t.select(); expMsg(document.execCommand('copy')?'Copied.':'Select the text above and copy it by hand.'); }
+  catch(e){ expMsg('Select the text above and copy it by hand.'); }
+}
+function downloadLog(){
+  try{
+    const blob=new Blob([logText()],{type:'text/plain;charset=utf-8'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='anthracite-1902-record.txt';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},1000);
+    expMsg('If nothing downloaded, this page cannot save files here — use Copy it instead.');
+  }catch(e){ expMsg('Downloads are blocked here. Use Copy it instead.'); }
+}
 
 function finishActOne(){
   let h,d,n,over=false;
@@ -2790,6 +2961,8 @@ function finishActThree(){
 }
 
 function signIt(){
+  S.flags.SIGNED=true;
+  note('Signed the award');
   const a=award(), good=awardWeight(a);
   const rx={
    cm:[good>=7?'GRUDGING':'ANGRY', good>=7?'It is on paper. It took five months and it is on paper.'
@@ -2803,6 +2976,7 @@ function signIt(){
 }
 function refuseIt(){
   S.flags.REFUSED=true;
+  note('Refused the award and called the men out again');
   const rx={
    cm:['ANGRY','We are working. We are being paid. You want us to stop again, in April, over a piece of paper?'],
    lb:['FURIOUS','My children ate this month. You are asking me to take that back for a word.'],
