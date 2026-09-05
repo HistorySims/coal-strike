@@ -431,14 +431,32 @@ const GLOSS_NAME={checkweighman:'check-weighman',companystore:'company store',
  crossexam:'cross-examination',breakerboy:'breaker boy'};
 const parse=s=>s.replace(/\[\[(\w+)\|([^\]]+)\]\]/g,(m,k,d)=>`<span class="gl" data-k="${k}">${d}</span>`)
                 .replace(/\[\[(\w+)\]\]/g,(m,k)=>`<span class="gl" data-k="${k}">${k}</span>`);
+// Beat text may carry {{FLAG?text if set|text if not}} so a later act can tell the
+// truth about a choice an earlier one recorded.
+const fill=t=>String(t).replace(/\{\{(\w+)\?([^|}]*)\|([^}]*)\}\}/g,(m,f,y,n)=>S.flags[f]?y:n);
 const md=s=>parse(String(s).replace(/\\n/g,'\n')).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
                     .replace(/\*([^*]+)\*/g,'<em>$1</em>');
 
-/* ═══ STATE ═══ one object for all three acts; Acts II and III have no
-   initializer of their own. SPLIT is only moved by Act II; hot and wry only by
-   Act III's conference. COALF is the fractional coal Act III's tickCoal drives.
-   warms0 marks the I/II boundary so Act II's "cheered by his own" ending still
-   measures applause earned in Act II. */
+/* ═══ STATE ═══ one object for all four acts. Only Act I has an initializer;
+   every later act inherits whatever the player left behind. Which act touches what:
+
+     FIELD     I II III      men still out. Act IV sets it to 6 at the act break.
+     FUND      II III        weeks of food. Read by the Act II and Act III endings.
+     COUNTRY   I II III IV   public opinion. Read by the Act I, II and IV endings.
+     STANDING  I II III IV   your name. Also gates Roosevelt's conference in Act III.
+     MINES     I             flooded workings. Feeds production(), so one June order
+                             changes the coal in every act after it.
+     COAL      I II          scripted per beat.
+     COALF                   III IV  fractional coal; tickCoal drives it from
+     DEMAND                   production() against demand once the cold is the story.
+     SPLIT     II            union split. Act II's ending only.
+     warms     I II          cheers from your own men. Acts I and II endings only;
+     warms0                   marks the I/II boundary so Act II measures its own.
+     hot wry   III           temper in the room. Act III's ending only.
+     rel mood  all           the five voices, moved by every reaction payload.
+     PRE act   engine        which beat and which act the HUD is drawing.
+     flags     all           decisions a later act asks about, by name or through
+                             a {{FLAG?yes|no}} token in beat text. */
 const S={FIELD:78,FUND:19,COUNTRY:42,STANDING:50,MINES:100,SPLIT:0,act:1,
  COAL:8,COALF:8,DEMAND:2.2,PRE:false,
  rel:{cm:3,lb:-3,pr:0,ho:0},warms:0,warms0:0,hot:0,wry:0,flags:{},
@@ -550,7 +568,9 @@ function drawStrip(){
    <text x="12" y="101" font-size="${fitNote(note,7.4).toFixed(2)}" font-style="italic" fill="#6b5c44">${note}</text></svg>`;
 }
 // Scabs cannot run a colliery. Real output only starts once the line has largely broken.
-function production(){ return Math.max(0,(100-S.FIELD)/100 - 0.20) * 1.9; }
+function production(){
+  return Math.max(0,(100-S.FIELD)/100 - 0.20) * 1.9 * (S.MINES/100);
+}
 let prevCoal = 8;
 // Acts I and II script the coal per beat; Act III lets production and demand decide it.
 function setCoal(v){ prevCoal=S.COAL; S.COALF=v; S.COAL=v; }
@@ -2048,7 +2068,6 @@ function tally(){
     for(const k in w.g) t[k]+=w.g[k];
     if(w.risk===2){ t.WAGE-=1; } });
   if(S.flags.LEAD) t[S.flags.LEAD]+=3;
-  t.OPS = 3;                       // the operators put on their own case, always
   t.WAGE=Math.max(0,t.WAGE-2); t.HOURS=Math.max(0,t.HOURS-1);
   return t;
 }
@@ -2086,7 +2105,6 @@ function drawFind(){
 }
 function submitCase(){
   const t=tally();
-  S.flags.CASE=t;
   const strong=FINDINGS.filter(([k])=>k!=='UNION'&&t[k]>=6).length;
   const rx={
    cm:[strong>=3?'GRUDGING':'ANGRY', strong>=3?'He put the weigh house on the record. Twenty years we asked for that.'
@@ -2098,7 +2116,7 @@ function submitCase(){
       :'The miners made a careful case, and a dull one.'],
    ho:[t.DANGER>=5?'GRUDGING':'COLD', t.DANGER>=5?'We did not know they died at that rate. Nobody told us.'
       :'We only want to know what it does to the price.']};
-  apply({},rx,"The commission heard 558 witnesses over three months. Clarence Darrow argued for the miners. The testimony of the breaker boys did not change the award at all, and it changed the country.");
+  apply({COUNTRY: t.CHILD>=5?7:t.DANGER>=5?4:0},rx,"The commission heard 558 witnesses over three months. Clarence Darrow argued for the miners. The testimony of the breaker boys did not change the award at all, and it changed the country.");
 }
 
 /* ═══ THE AWARD ═══ */
@@ -2165,7 +2183,7 @@ const BEATS=[
   {l:'The pump men stay at their posts.',
    why:['Keep the mines dry and the jobs still exist when this ends. The country notices a union that does not wreck things — and the only door out of this strike is Washington.',
         "But you have ordered starving men to protect the property of the company starving them. Baer gets his mines kept dry for free."],
-   fx:{FIELD:-15,COUNTRY:9,STANDING:13},flag:'PUMPS_HELD',
+   fx:{FIELD:-15,COUNTRY:9,STANDING:13},
    rx:{cm:['FURIOUS','"We go hungry so their water stays down. You come tell my wife that yourself."'],
        lb:['FURIOUS','"Every man underground knows what you just did. Not one of us forgets it."'],
        op:['COLD','"Mr. Mitchell has protected our property. He will get nothing whatever for it."'],
@@ -2337,7 +2355,7 @@ const BEATS=[
   {l:'Argue against it. We keep our contracts.',
    why:['A union that keeps its word is the only kind that survives in court. Break these contracts and you hand every judge in America the reason to break you.',
         'It is easy to have principles when you are not the one going hungry. Every man in that room knows it.'],
-   fx:{FIELD:-12,COUNTRY:9,STANDING:11},flag:'HELD_CONTRACTS',
+   fx:{FIELD:-12,COUNTRY:9,STANDING:11},
    rx:{cm:['GRUDGING','"A deal is a deal. I do not like it, and he is right."'],
        lb:['FURIOUS','"He will not spend their pay to save our children. He has never had to choose the other way."'],
        op:['COLD','"He just refused to use the only weapon he had. Give him nothing."'],
@@ -2396,7 +2414,7 @@ const BEATS=[
   {l:'Go yourself.',
    why:['Nobody else can say yes in that room. A union that sends someone else to the White House is telling the country it is not serious.',
         'You will be judged on your face, in a chair, with no time to think, against a man who has been practicing since May.'],
-   fx:{STANDING:4},flag:'WENT'},
+   fx:{STANDING:4}},
   {l:'Send your three vice-presidents instead.',
    why:['Three men can talk it over. None of them can be pushed into saying the thing that ruins it.',
         'Roosevelt asked for you. He will notice. So will every paper that prints the guest list.'],
@@ -2468,11 +2486,11 @@ const BEATS=[
  type:'go'},
 
 {act:4,scene:'you',tag:'What you could not see',who:'The part you missed',
- text:"You think you lost the big one. By your own measure you did. They would not write the word [[union|union]] on any paper.\\n\\nBut something happened in that room in October that had never happened before.\\n\\nA president stood **between** the two sides. Not behind one of them.\\n\\nEvery strike after this one is argued in the shape you made.\\n\\nNobody will ever tell you that.",
+ text:"You think you lost the big one. By your own measure you did. They would not write the word [[union|union]] on any paper.\\n\\nBut something happened in that room in October that had never happened before.\\n\\nA president stood **between** the two sides. Not behind one of them.\\n\\n{{REPUDIATED?It turned on a day in July when you stood up and condemned your own men out loud, and the country decided which of the two of you was the reasonable one.|It turned on the country looking at the two of you in October and not seeing two mobs. That was a near thing, and it was very nearly not true.}}\\n\\nEvery strike after this one is argued in the shape you made.\\n\\nNobody will ever tell you that.",
  type:'go'},
 
 {act:4,scene:'you',tag:'1908',who:'And the rest of it',
- text:"You owned shares in coal companies while you ran the union.\\n\\nYou took money from a businessmen's group while you spoke for the men who worked for them.\\n\\nIt came out. The union later banned its officers from doing what you did.\\n\\nYou left in 1908. Your health was bad. So was your drinking. You died at forty-nine.\\n\\nThe holiday is still on the calendar.",
+ text:"You owned shares in coal companies while you ran the union.\\n\\n{{TOOK_THE_MONEY?You took money from a businessmen's group while you spoke for the men who worked for them.|You turned down the businessmen's money in September, and went on sitting in their rooms for years anyway.}}\\n\\nIt came out. The union later banned its officers from doing what you did.\\n\\nYou left in 1908. Your health was bad. So was your drinking. You died at forty-nine.\\n\\nThe holiday is still on the calendar.",
  type:'end'}
 ];
 
@@ -2532,7 +2550,7 @@ function show(){
   whoEl.textContent=b.who;
   const inAct=BEATS.filter(x=>x.act===b.act);
   statEl.textContent='Beat '+(inAct.indexOf(b)+1)+' / '+inAct.length;
-  sayEl.innerHTML=md(b.text + (b.note && S.flags.TENTS ? '\n\n'+b.note : ''));
+  sayEl.innerHTML=md(fill(b.text) + (b.note && S.flags.TENTS ? '\n\n'+b.note : ''));
   defEl.style.display='none'; hud();
   const card = b.offer ? personCard(b.offer[0], parse(b.offer[1]).replace(/\n/g,'<br>'), 0) : '';
   if(b.type==='builder'){
@@ -2568,6 +2586,8 @@ function show(){
   } else if(b.type==='conf'){
     uiEl.innerHTML = S.STANDING<30
       ? `<button class="go" onclick="noConference()">Wait for the telegram →</button>`
+      : S.flags.SENT_DEPUTIES
+      ? `<button class="go" onclick="deputiesGo()">Wait for the wire from Washington →</button>`
       : `<button class="go" onclick="startConf()">Go to Washington →</button>`;
   } else if(b.type==='end'){
     uiEl.innerHTML=`<button class="go" onclick="finish()">Read the paper →</button>`;
@@ -2611,6 +2631,18 @@ function apply(fx,rx,record){
       <q>${rx[k][1]}</q></div></div>`;}).join('');
   recEl.innerHTML=record?`<b>The record</b><br>${record}`:'';
   ovl.style.display='block'; ovl.scrollTop=0;
+}
+// You said you would send your three vice-presidents. This is that meeting: it happens,
+// and you are not in it, so there is no temper for you to keep or lose.
+function deputiesGo(){
+  const rx={
+   cm:['ANGRY','The one room that ever mattered and our own president was not standing in it.'],
+   lb:['ANGRY','He sent men to speak for the men who speak for us. That is two rooms away from me.'],
+   op:['COLD','Clerks. We addressed the President and let them take notes.'],
+   pr:['ANGRY','Mr. Mitchell was invited by name. Mr. Mitchell sent a delegation.'],
+   ho:['COLD','Somebody was in the room. We are still waiting to hear what came of it.']};
+  apply({COUNTRY:-8,STANDING:-6},rx,
+   "Roosevelt invited Mitchell and Baer personally. Mitchell went himself, and afterwards Roosevelt wrote that the only man in the room who behaved like a gentleman was the representative of the miners. That judgement is most of why the commission happened at all.");
 }
 function startConf(){
   conf=0; art.innerHTML=scTable('baer');
@@ -2688,7 +2720,6 @@ function finishActTwo(){
 }
 
 function noConference(){
-  S.flags.NO_CONFERENCE=true;
   endPaper('NO CONFERENCE','President declines to intervene in the coal fields',
    "The telegram never comes.\n\nRoosevelt read the summer the same way the country did. He saw two mobs in a valley. No president spends himself on a side the public has already blamed, and yours was blamed in July.\n\nThe cities freeze. The men go back in November with nothing. The operators take back only the ones they want.\n\n**Ending — the door shut before October.** Everything after the walkout came down to what people thought of you. You spent that in the summer.",
    'The strike is over', AGAIN);
@@ -2707,6 +2738,9 @@ function finishActThree(){
   } else if(S.hot*2+S.wry>=6){
     h='BOTH SIDES REBUKED';d='President said to regard the parties as equally intemperate';
     n="You answered him. Every coal town heard about it. It felt like the only honest thing you did all year.\n\nRoosevelt walked out of that room saying both men were loud. The board still meets — the cold made that certain — but you will get the smaller version of everything. In the one room where they decided who was reasonable, you made it a question.\n\n**Act Three ends.** It was the truest thing you said, and it cost you the award.";
+  } else if(S.flags.SENT_DEPUTIES){
+    h='THE COMMISSION IS APPOINTED';d='Miners represented by delegation at the conference';
+    n="Your three vice-presidents sat in that room for an afternoon and said the careful thing every time.\n\nNobody remembers which of them said it. Roosevelt formed his opinion of this strike from the faces in front of him, and yours was not one of them.\n\n**Act Three ends.** The board still meets. You will get the version of everything that is handed to people who were not there.";
   } else if(S.hot+S.wry===0){
     h='THE COMMISSION IS APPOINTED';d='Miners accept arbitration without conditions';
     n="You sat there and let a man call you a murderer, and said nothing. It is the most useful thing you have ever done.\n\nRoosevelt writes later that only one man in that room acted like a gentleman. Your own men will read that line, and some of them will never forgive you for earning it.\n\n**Act Three ends.** Keeping quiet is not a virtue here. It is money, and you spent none of it.";
@@ -2729,7 +2763,7 @@ function signIt(){
    op:['COLD','They did not get the word. That is the only line in it we care about.'],
    pr:['CHEERING','Both sides kept their promise and accepted the ruling. That is the news.'],
    ho:['GRUDGING','There is coal. That is all we ever wanted from any of you.']};
-  apply({},rx,"The award of March 21, 1903 gave a ten per cent increase, a nine-hour day for most trades, a board of conciliation, and no recognition of the union. Mitchell's own left wing called it a sellout.");
+  apply({COUNTRY:8,STANDING:good>=6?5:-3},rx,"The award of March 21, 1903 gave a ten per cent increase, a nine-hour day for most trades, a board of conciliation, and no recognition of the union. Mitchell's own left wing called it a sellout.");
 }
 function refuseIt(){
   S.flags.REFUSED=true;
@@ -2754,8 +2788,11 @@ function finishActFour(){
      : "The men got no raise at all."+NL;
   n += a.weight===2 ? "And they got a man of their own at the scale, which is the thing they had wanted since before you were born."+NL
      : "The weigh house stayed exactly as it was."+NL;
-  n += legacy>=8
+  if(S.MINES<90) n += "The collieries that flooded in June are still being pumped out. Some of those men have no place to go back to, and they know which order did that."+NL;
+  n += legacy>=8 && S.COUNTRY>=45
      ? "The testimony you chose did something the award could not. The country read what a twelve-year-old does for a living, and it did not put the paper down. Pennsylvania tightened its child labour law in 1905. It is not in the award. It is in the record, and the record outlived everyone in it."+NL
+     : legacy>=8
+     ? "The testimony you chose was the truest thing in the record. But the country had already made up its mind about this strike in the summer, and it read a boy on the stand as a thing you had arranged. The law did not move."+NL
      : "You built a careful case about wages and hours. It won what it could win. Nobody outside those counties remembers a word of it."+NL;
   n += "You never got [[recognition]]. No board was ever going to grant it. You knew that in May."+NL+
    "They did give you a [[conciliation|standing board]] to bring problems to. That is less than a contract and more than nothing."+NL+
