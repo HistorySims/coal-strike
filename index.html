@@ -341,6 +341,23 @@ section{background:var(--panel);padding:9px 11px 12px;flex:1 1 auto;overflow-y:a
 .fr .st{flex:0 0 78px;text-align:right;font-size:9px;font-family:ui-monospace,Menlo,monospace;}
 .fr.no .bar{color:#8c1d15;} .fr.no .st{color:#8c1d15;}
 /* award */
+.news{white-space:normal;margin-bottom:11px;padding-bottom:9px;
+ border-bottom:1px solid var(--line);}
+.news .nh{font-size:7.6px;letter-spacing:1.5px;text-transform:uppercase;color:#7a644e;
+ font-family:ui-monospace,Menlo,monospace;border-bottom:2px solid var(--ink);
+ padding-bottom:4px;margin-bottom:8px;}
+.news p{font-size:12.6px;line-height:1.5;text-align:justify;margin-bottom:7px;
+ hyphens:auto;-webkit-hyphens:auto;}
+.news p:first-of-type{text-indent:0;}
+.news p+p{text-indent:14px;}
+.news p b{letter-spacing:.6px;}
+.news blockquote{margin:8px 0 8px 10px;padding-left:9px;border-left:3px solid var(--rust);}
+.news blockquote q{display:block;font-size:12.4px;font-style:italic;line-height:1.42;quotes:none;}
+.news blockquote q:before,.news blockquote q:after{content:'';}
+.news blockquote cite{display:block;font-size:9.4px;font-style:normal;margin-top:3px;
+ letter-spacing:.6px;text-transform:uppercase;color:#7a644e;
+ font-family:ui-monospace,Menlo,monospace;}
+.news blockquote.qa{border-left-color:#5b6770;}
 .rec{margin-top:11px;border-top:2px solid var(--ink);padding-top:7px;white-space:normal;}
 .rec>b{display:block;font-size:8.6px;letter-spacing:1.8px;text-transform:uppercase;
  color:var(--rust);margin-bottom:5px;}
@@ -2768,14 +2785,151 @@ function finish(){
 }
 function endPaper(h,d,n,label,button){
   const meters={}; for(const k in MLABEL) if(k!=='SPLIT') meters[k]=S[k];
-  LOG.push({kind:'end',act:S.act,h,d,n:plain(n),meters,label});
+  LOG.push({kind:'end',act:S.act,h,d,n:plain(n),meters,label,article:articleText(S.act).map(plain)});
   draw('paper',{h,d}); hud();
   whoEl.textContent='The Scranton Republican'; statEl.textContent=label;
-  sayEl.innerHTML=md(n)+actRecord(S.act); defEl.style.display='none';
+  sayEl.innerHTML=articleHTML(S.act)+md(n)+actRecord(S.act); defEl.style.display='none';
   uiEl.innerHTML=button;
 }
 const AGAIN=`<button class="go" onclick="exportLog()">Export the whole record ↓</button>`+
  `<button class="go" style="margin-top:7px" onclick="location.reload()">Play again ↻</button>`;
+
+/* ═══ THE PAPER'S OWN ACCOUNT ═══ Each act ends with a story written the way the
+   Scranton Republican would have written it: what Mitchell did that season, how it
+   landed, and one voice on either side of him. Everything below is chosen by the
+   decisions the player actually made. */
+const AND=a=>a.length<2?a.join('') : a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+// The demands read as headings on the builder; in a sentence they need to be noun phrases.
+const ASKNAME={w10:'ten per cent more pay',w20:'twenty per cent more pay',
+ w50:'fifty per cent more pay',scale:'an honest scale',h8:'the eight-hour day',
+ store:'an end to the company store',back:'back pay for every docked car',
+ rec:'recognition of the union'};
+function artOne(){
+  const sc=scores(), kind=askNote(sc.ask)[0];
+  const t=id=>picked.has(id), names=TERMS.filter(x=>picked.has(x.id)).map(x=>ASKNAME[x.id]);
+  const P=[];
+  P.push(`The anthracite strike closed its seventh week last night with ${S.FIELD} men in every hundred still standing away from the collieries. Hard coal that sold at five dollars the ton in April is dearer in Philadelphia this morning, though no household east of the mountains has yet had cause to be frightened by it.`);
+  P.push(names.length
+    ? `The paper handed to the operators at Shamokin on the fourteenth of May asks for ${AND(names)}. `+
+      (kind==='thin' ? `It is a short list. Men who have gone six weeks without wages are entitled to ask what they went out for, and this office is not certain it can tell them.`
+       : kind==='fair' ? `It is a moderate list, and it is the length of it that will decide the thing. Nothing on that paper would ruin a colliery, and every line of it would be felt in a kitchen.`
+       : kind==='heavy' ? `It is a long list, and its length will be printed in every paper in the East before the week is out. Mr. Mitchell has asked for a great deal at once.`
+       : `It is everything at once. Read in New York, it will not sound like a demand for bread.`)
+    : `No paper of demands has been laid before the operators at all, which is a novelty in the history of strikes.`);
+  if(t('rec')) P.push(`Among the demands is recognition of the union itself. The operators have said, and will say again, that they will not treat with an organisation they do not admit exists. It is the one line on the paper that no amount of hunger will move them off.`);
+  P.push(S.flags.PUMPS_PULLED
+    ? `In June the water settled the argument. Mr. Mitchell permitted the pump men to come out with the rest, and the workings began to fill. ${S.MINES<90?`Something near a dozen collieries now stand below the second level.`:''} It is the first thing the strikers have done that costs the companies money by the day, and the first that will cost the region jobs when it is over.`
+    : `In June Mr. Mitchell ordered the pump men to stay at their posts, and they stayed. The workings are dry, the machinery is sound, and every colliery in the field is fit to reopen the morning the men go back. He has protected the property of the companies that are starving his members, and he has been given nothing whatever for it.`);
+  return {place:'SCRANTON, PA.',date:'MONDAY, JUNE 30, 1902',lead:'Scranton, June 30',paras:P,
+    qf: S.flags.PUMPS_PULLED
+      ? {w:'A district officer at Nanticoke',l:'Let the water have it. It is the only argument that firm has ever answered, and it is the first one we have had.'}
+      : {w:'The Rev. John Curran, of Wilkes-Barre',l:'Whatever else the man is, he is not a wrecker. He has kept the mines whole for people who would not give him a civil word.'},
+    qa: sc.ask>=16
+      ? {w:'An officer of the Philadelphia & Reading',l:'They have asked for the whole industry in a single afternoon. We shall print their paper exactly as they wrote it and let the country read it.'}
+      : {w:'George F. Baer, president of the Reading',l:'There is nothing here to discuss. We do not recognise the persons who signed this paper and we shall not answer it.'}};
+}
+function artTwo(){
+  const P=[], fed=fedCount();
+  P.push(`Nineteen weeks. The credit book at the company stores has been shut since July, the deputies have carried the furniture of a good many families into the road, and ${S.FIELD} men in every hundred are still out. Coal has begun to move in price in the cities, which is the first thing this summer that has frightened anybody who does not live here.`);
+  P.push(S.flags.TENTS
+    ? `To the evictions Mr. Mitchell answered with canvas. The union rented ground and put up tents, and asked the region publicly to keep the peace. The photographs from Hazleton of families under sailcloth in the rain have done the operators more damage than any speech delivered this year, and the rent came out of the same fund that buys flour.`
+    : S.flags.LET_IT_RIDE
+    ? `To the evictions Mr. Mitchell answered with nothing at all. He has declined to tell any man to come off his own porch, and there are men sitting on porches in this region tonight with whatever was in the house. Whatever happens now, he did not order it, and he did not stop it.`
+    : `To the evictions Mr. Mitchell answered that the fund would not be spent on canvas, and the families put out this month have gone where they could. Every dollar stays with the flour. Everyone in the region can see that this was decided rather than merely suffered.`);
+  P.push(`The relief line at the station fed ${fed} of every sixteen families that stood in it this week`+
+    (alloc.bury===0?`, and there is no money set aside to bury anybody`:'')+
+    (alloc.legal===0?`. Men taken up by the Coal and Iron Police are answering for themselves in front of a magistrate, without counsel`:'')+`.`);
+  P.push(S.flags.REPUDIATED
+    ? `After the killing at Shenandoah on the thirtieth of July, Mr. Mitchell condemned the crowd publicly and by name. It was the most useful sentence he has spoken since May and it was heard in every kitchen in this valley as something else.`
+    : S.flags.DEFENDED
+    ? `After the killing at Shenandoah on the thirtieth of July, Mr. Mitchell explained the provocation and stood by the men. The operators have waited all summer for him to speak in that voice, and the word Molly Maguire has been in print within the week.`
+    : `After the killing at Shenandoah on the thirtieth of July, Mr. Mitchell said nothing. He was asked four times. The papers have since written his answer for him, and it is worse than anything he would have said.`);
+  if(S.flags.ACCUSED_LB) P.push(`Word of a company man on the executive board sent Mr. Mitchell's people to the Hazleton local first, which is the Slavic and Lithuanian one. Every man in it understood what it meant that they were looked at first, and a good many of them have stopped coming to meetings.`);
+  else if(S.flags.ACCUSED_CM) P.push(`Word of a company man on the executive board sent Mr. Mitchell's people to Scranton, and the old hands who built this union have spent a month answering questions about themselves. He looked at his own first. It has not made him popular and it has kept the thing from becoming a hunt.`);
+  else if(S.flags.WENT_QUIET) P.push(`Told that a company man sits somewhere on his own board, Mr. Mitchell accused nobody and simply stopped saying anything of consequence in a meeting. The leaks have stopped. So, by most accounts, has the business of the union.`);
+  if(S.flags.PROCESSION) P.push(`The man Kowalski, shot near the Duryea gate in September, was carried a mile by the whole district with the militia camped three miles off. It is the truest photograph anyone has taken of this strike and the least welcome one in Philadelphia.`);
+  return {place:'WILKES-BARRE, PA.',date:'TUESDAY, SEPTEMBER 30, 1902',lead:'Wilkes-Barre, Sept. 30',paras:P,
+    qf: S.flags.REPUDIATED
+      ? {w:'The Philadelphia Press, in a leading article',l:'Mr. Mitchell speaks like a citizen and not like an agitator. We have said so on page one and we say it again.'}
+      : {w:'John Fahy, of District 9',l:'He did not hand us over when it would have been easy and profitable to hand us over. Remember that in December.'},
+    qa: Math.abs(S.SPLIT)>20
+      ? {w:'An operator, who declined to be named',l:'They are searching one another. We are told the Hazleton men have stopped sending delegates. We need do nothing at all.'}
+      : {w:'W. H. Truesdale, of the Lackawanna',l:'Their fund is a charity and ours is a credit book. One of the two will last the winter and it is not theirs.'}};
+}
+function artThree(){
+  const P=[], temper=S.hot*2+S.wry;
+  P.push(`Coal reached thirty dollars the ton in New York this month and could not be had at the price. Schools have shut, hospitals are burning what they have, and crowds gather round any wagon that stops moving. None of this was arranged by the United Mine Workers, and all of it is now the strongest argument they have.`);
+  P.push(S.flags.CONTRACTS_BROKEN
+    ? `At the special convention Mr. Mitchell stood aside and let the delegates vote to call out the soft coal fields. The contracts his own union signed in Ohio and Illinois are broken, and the lawyers of six railroads were in court inside a week. He will very likely win this strike before Christmas and spend six years paying for it.`
+    : `At the special convention Mr. Mitchell argued from the chair against calling out the soft coal men, and the vote failed. The contracts hold. He has declined to use the only weapon that would have ended this before the snow, on the ground that a union which breaks its word cannot survive a courtroom.`);
+  if(S.flags.TOOK_THE_MONEY) P.push(`It is understood that money has reached the relief fund through Senator Hanna and the Civic Federation. The Senator is the chairman of the operators' own party. He asked for nothing, and that is the part that will be printed one day.`);
+  P.push(S.flags.NO_CONFERENCE
+    ? `The President did not send for him. Washington has read this summer the way the country read it, and sees two mobs in one valley rather than a case with two sides. There will be no conference.`
+    : S.flags.SENT_DEPUTIES
+    ? `Invited to the Executive Mansion on the third of October, Mr. Mitchell sent three vice-presidents in his place. They said the careful thing every time and nobody now remembers which of them said it. The President formed his opinion of this strike from the faces across the table, and Mr. Mitchell's was not among them.`
+    : temper>=6
+    ? `At the Executive Mansion on the third of October Mr. Baer refused to acknowledge Mr. Mitchell, called him a criminal to his face, and demanded the army. Mr. Mitchell answered him, and answered him again. Two men raised their voices in that room and the President has been careful since to name them together.`
+    : temper===0
+    ? `At the Executive Mansion on the third of October Mr. Baer refused to acknowledge Mr. Mitchell, called him a criminal to his face, and demanded the army. Mr. Mitchell sat still and addressed himself to the President. Only one man in that room lost his temper, and the whole country now knows which.`
+    : `At the Executive Mansion on the third of October Mr. Baer refused to acknowledge Mr. Mitchell and demanded that the army be sent. Mr. Mitchell answered where answering served him and kept still where it did not. The President has said nothing publicly and is understood to have formed a view.`);
+  return {place:'WASHINGTON, D.C.',date:'THURSDAY, OCTOBER 16, 1902',lead:'Washington, Oct. 16',paras:P,
+    qf: temper>=6
+      ? {w:'A miner at Olyphant',l:'He said it back to him, in that house, to his face. There is not a man in this valley who has not heard about it twice.'}
+      : {w:'The President, in a letter since made public',l:'The only man in that room who behaved like a gentleman was the representative of the miners.'},
+    qa: temper>=6
+      ? {w:'The New York Sun',l:'Both parties behaved badly and it was not easy to tell them apart. The country wanted a hearing and was given a quarrel.'}
+      : {w:'George F. Baer, president of the Reading',l:'There is nothing to arbitrate. We do not agree that a union exists in these coal fields and we shall not deal with one.'}};
+}
+function artFour(){
+  const a=award(), P=[], wits=WITNESSES.filter(w=>called.has(w.id)).map(w=>w.nm.replace(/^A /,'a '));
+  const lead={WEIGHT:'the weighing of the coal',WAGE:'the wage',CHILD:'the boys in the breakers'}[S.flags.LEAD];
+  P.push(`The commission appointed by the President has handed down its award. Seven men sat for four months, heard 558 witnesses in Scranton and Philadelphia, and have now settled what one hundred and forty-seven thousand men were owed for one hundred and sixty-three days.`);
+  P.push(`The mine workers had five hearing days${wits.length?` and spent them on ${AND(wits)}`:''}.`+
+    (lead?` Mr. Darrow closed on ${lead}, and held to it for the better part of two days.`:''));
+  const said=[];
+  said.push(a.wage>=3?'a ten per cent advance, made retroactive to the first of November'
+    : a.wage===2?'a ten per cent advance' : a.wage===1?'an advance of five per cent'
+    : a.wage===0?'no advance in wages whatever' : 'nothing on wages, which were never put before it');
+  said.push(a.hours>=3?'a nine hour day, and eight hours for the engine and pump men'
+    : a.hours===2?'the nine hour day' : a.hours===1?'nine hours in some trades only'
+    : a.hours===0?'no change in the length of a shift' : 'nothing on hours, which were never put before it');
+  said.push(a.weight>=3?'a checkweighman at every colliery, paid by the men themselves'
+    : a.weight===2?'a checkweighman wherever coal is paid for by weight'
+    : a.weight===1?'that coal be weighed where weighing it is practical'
+    : a.weight===0?'no change at the weigh house' : 'nothing on the scale, which was never put before it');
+  P.push(`The award gives ${AND(said)}. `+
+    (a.concil===2?`A standing board of six is established to hear disputes as they arise, with an umpire named by a federal judge. `
+     : a.concil===1?`A standing board of six is established to hear disputes as they arise. ` : `No standing board is established. `)+
+    `Recognition of the union `+(a.union<0?`was not asked for.`:`is refused, as everyone in this region knew on the day the men walked out.`));
+  P.push(S.flags.REFUSED
+    ? `Mr. Mitchell has refused the award and asked the districts to go out a second time. He gave his word in front of the President that he would accept whatever came. The men have been drawing wages since October and it is April.`
+    : `Mr. Mitchell has accepted the award and urged the districts to ratify it. He has been asked repeatedly whether five months of hunger bought enough, and has not given a direct answer to the question.`);
+  return {place:'WASHINGTON, D.C.',date:'SATURDAY, MARCH 21, 1903',lead:'Washington, March 21',paras:P,
+    qf: awardWeight(a)>=7
+      ? {w:'A contract miner at Plymouth',l:'It is on paper. Five months, and it is on paper where a company cannot quietly take it back.'}
+      : {w:'John Fahy, of District 9',l:'It is thin. It is also the first thing any of us has ever been given in writing, and I will not be the man who tears it up.'},
+    qa: S.flags.REFUSED
+      ? {w:'The New York Sun',l:'Mr. Mitchell pledged his word to the President and to the nation, and has now withdrawn it. He will find the country has a long memory for that.'}
+      : {w:'A Hazleton laborer, at the ratification meeting',l:'Five months my children went short, and they would not write the one word we asked for. Tell me again what we won.'}};
+}
+const ARTICLE={1:artOne,2:artTwo,3:artThree,4:artFour};
+function articleHTML(act){
+  const A=(ARTICLE[act]||(()=>null))(); if(!A) return '';
+  return `<div class="news">
+   <div class="nh">${A.place} &nbsp;·&nbsp; ${A.date}</div>
+   ${A.paras.map((t,i)=>`<p>${i===0?`<b>${A.lead}.</b> — `:''}${t.replace(/\s+/g,' ').trim()}</p>`).join('')}
+   <blockquote class="qf"><q>${A.qf.l}</q><cite>${A.qf.w}</cite></blockquote>
+   <blockquote class="qa"><q>${A.qa.l}</q><cite>${A.qa.w}</cite></blockquote>
+  </div>`;
+}
+function articleText(act){
+  const A=(ARTICLE[act]||(()=>null))(); if(!A) return [];
+  const out=['THE SCRANTON REPUBLICAN · '+A.place+' · '+A.date,''];
+  A.paras.forEach((t,i)=>{ out.push((i===0?A.lead+'. — ':'')+t.replace(/\s+/g,' ').trim()); out.push(''); });
+  out.push('"'+A.qf.l+'"'); out.push('    — '+A.qf.w); out.push('');
+  out.push('"'+A.qa.l+'"'); out.push('    — '+A.qa.w);
+  return out;
+}
 
 /* ═══ EXPORT ═══ the whole record as plain text a student can hand in */
 function awardLines(){
@@ -2824,6 +2978,11 @@ function logText(){
       out.push('');
       wrap(e.n,2).forEach(l=>out.push(l));
       out.push('');
+      if(e.article && e.article.length){
+        out.push('  '+'-'.repeat(W-2)); out.push('');
+        e.article.forEach(l=>{ if(!l) out.push(''); else wrap(l,2).forEach(x=>out.push(x)); });
+        out.push('');
+      }
     }
   });
   const aw=awardLines();
