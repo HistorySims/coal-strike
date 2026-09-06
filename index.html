@@ -18,7 +18,7 @@ body{background:#0d0b09;color:var(--ink);font-family:Georgia,'Times New Roman',s
 header{background:var(--hud);border-bottom:2px solid var(--ink);padding:6px 7px 7px;flex:0 0 auto;}
 .mast{display:flex;justify-content:space-between;align-items:center;
  border-bottom:1px solid var(--line);padding-bottom:3px;margin-bottom:5px;}
-.mast b{font-size:9.5px;letter-spacing:2.2px;text-transform:uppercase;color:var(--rust);}
+.mast h1{font-size:9.5px;letter-spacing:2.2px;text-transform:uppercase;color:var(--rust);font-weight:700;}
 .mast span{font-size:8.5px;letter-spacing:1.4px;text-transform:uppercase;color:#4a3b2c;}
 .voices{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:4px;}
 .vc{background:var(--cell);border:1px solid var(--line);padding:2px 1px 3px;text-align:center;}
@@ -51,6 +51,14 @@ header{background:var(--hud);border-bottom:2px solid var(--ink);padding:6px 7px 
 .mt .dl{font-size:7.6px;height:10px;font-family:ui-monospace,Menlo,monospace;color:#8c2f22;}
 .mt.up .dl{color:#2f5d34;}
 
+@media(max-width:430px){
+ .mast h1{font-size:8px;letter-spacing:1.2px;}
+ .mast span{font-size:7.4px;letter-spacing:.9px;}
+}
+@media(max-width:340px){
+ .mast h1{font-size:7px;letter-spacing:.6px;}
+ .mast span{font-size:6.6px;letter-spacing:.4px;}
+}
 main{flex:0 0 auto;height:216px;background:var(--paper);overflow:hidden;border-bottom:3px solid var(--ink);}
 @media(min-width:520px){main{height:262px;}}
 main svg{display:block;width:100%;height:100%;}
@@ -63,6 +71,7 @@ section{background:var(--panel);padding:9px 11px 12px;flex:1 1 auto;overflow-y:a
 #say{font-size:13.6px;line-height:1.5;white-space:pre-wrap;}
 .hr{border-top:1px solid var(--line);margin:8px 0 7px;}
 .gl{border-bottom:2px dotted var(--rust);cursor:pointer;color:#5c3a1e;}
+#stage :focus-visible{outline:3px solid #7a3426;outline-offset:2px;}
 .gl:after{content:'?';font-size:8px;vertical-align:super;color:var(--rust);}
 #def{display:none;margin:7px 0 0;padding:7px 9px;background:#e6d9b6;
  border-left:4px solid var(--rust);font-size:12px;line-height:1.42;}
@@ -397,7 +406,7 @@ section{background:var(--panel);padding:9px 11px 12px;flex:1 1 auto;overflow-y:a
  .apr,.step1,.step2,.lampglow,.sp.cheer .bod,.roll,.watch,.wcyc,.wflood,
  .piston,.beam,.disch,.seep,.yell,.smk,.pick,.dig,.flowdot,
  .hold,.march,.pace,.flick,.arc,.rain,.rainA,.rainB,.patrol,.hoof,.shiver,
- .sleet,.huddle,.lamplit,.wave,.away,.wave2{animation:none}
+ .sleet,.huddle,.lamplit,.wave,.away,.wave2,.chaindot,.pf,.card{animation:none}
  .pt .hd,.pt .mo,.pt .lid,.pt .brw{animation:none}
  .sp.leaveL,.sp.leaveR{animation:none;opacity:.22}
  .turn{animation:none;opacity:.2}}
@@ -407,20 +416,20 @@ section{background:var(--panel);padding:9px 11px 12px;flex:1 1 auto;overflow-y:a
 <body>
 <div id="stage">
   <header>
-    <div class="mast"><b id="mast">The Coal Strike Chronicle · 1902</b><span id="actTag">Act I</span></div>
+    <div class="mast"><h1 id="mast">The Coal Strike Chronicle · 1902</h1><span id="actTag">Act I</span></div>
     <div class="voices" id="voices"></div>
     <div class="meters" id="meters"></div>
-    <div id="strip"></div>
+    <div id="strip" role="img" aria-label="Strike status: the fields, the coal, the cities"></div>
   </header>
-  <main id="art"></main>
+  <main id="art" role="img" aria-label="Scene illustration"></main>
   <section>
     <div class="tags"><b id="who"></b><span id="stat"></span></div>
-    <div id="say"></div>
-    <div id="def"></div>
+    <div id="say" aria-live="polite"></div>
+    <div id="def" role="status"></div>
     <div class="hr"></div>
     <div id="ui"></div>
   </section>
-  <div id="ovl">
+  <div id="ovl" role="dialog" aria-label="Incoming reactions" aria-live="polite">
     <div class="head"><b>Incoming reactions</b><span>angriest first ↓</span></div>
     <div id="cards"></div><div id="record"></div>
     <button class="go" style="margin-top:9px" onclick="dismiss()">Endure it &amp; continue →</button>
@@ -464,8 +473,10 @@ const GLOSS_NAME={checkweighman:'check-weighman',companystore:'company store',
  coalandiron:'Coal and Iron Police',mollies:'Molly Maguires',pinkerton:'Pinkerton detective',
  tentcolony:'tent colony',ncf:'National Civic Federation',
  crossexam:'cross-examination',breakerboy:'breaker boy'};
-const parse=s=>s.replace(/\[\[(\w+)\|([^\]]+)\]\]/g,(m,k,d)=>`<span class="gl" data-k="${k}">${d}</span>`)
-                .replace(/\[\[(\w+)\]\]/g,(m,k)=>`<span class="gl" data-k="${k}">${k}</span>`);
+const GL=(k,d)=>`<span class="gl" data-k="${k}" role="button" tabindex="0"`+
+  ` aria-label="What does ${d} mean?">${d}</span>`;
+const parse=s=>s.replace(/\[\[(\w+)\|([^\]]+)\]\]/g,(m,k,d)=>GL(k,d))
+                .replace(/\[\[(\w+)\]\]/g,(m,k)=>GL(k,k));
 // Beat text may carry {{FLAG?text if set|text if not}} so a later act can tell the
 // truth about a choice an earlier one recorded.
 const fill=t=>String(t).replace(/\{\{(\w+)\?([^|}]*)\|([^}]*)\}\}/g,(m,f,y,n)=>S.flags[f]?y:n);
@@ -1691,7 +1702,8 @@ function crowdState(){
 }
 function drawTerms(){
   const wageRows=TERMS.filter(t=>t.g==='wage'), rest=TERMS.filter(t=>!t.g);
-  const cell=t=>`<div class="tm ${picked.has(t.id)?'on':''}" data-id="${t.id}">
+  const cell=t=>`<div class="tm ${picked.has(t.id)?'on':''}" data-id="${t.id}"
+    role="checkbox" tabindex="0" aria-checked="${picked.has(t.id)}">
     <div class="bx">${picked.has(t.id)?'✕':''}</div>
     <div><b>${parse(t.t)}</b><i>${parse(t.d)}</i></div></div>`;
   document.getElementById('terms').innerHTML=
@@ -1730,8 +1742,9 @@ function outFaces(){
 }
 
 function deliver(){
-  if(picked.size) note('Filed the demands: '+TERMS.filter(t=>picked.has(t.id)).map(t=>t.t).join('; '));
-  if(!picked.size){ whisper({t:'nothing',fl:'You cannot hand them a blank sheet.',ou:'—'},true); return; }
+  if(!picked.size){ whisper({t:'nothing',fl:'You cannot hand them a blank sheet.',ou:'\u2014'},true); return; }
+  lockUI();
+  note('Filed the demands: '+TERMS.filter(t=>picked.has(t.id)).map(t=>t.t).join('; '));
   const sc=scores();
   const rx={
    cm:[bandMen(sc.cm), sc.thin?'"Six months without wages, for that? You could have got that by asking politely in March."'
@@ -1822,6 +1835,7 @@ function bump(id,d){
   alloc[id]=n; drawLedger(); bindGloss();
 }
 function deliverLedger(){
+  lockUI();
   note('Paid out the relief: '+LINES.map(l=>l.t.toLowerCase()+' '+alloc[l.id]).join(', ')+
        ' \u2014 '+fedCount()+' of 16 families fed');
   const sc=ledScores();
@@ -1924,6 +1938,7 @@ function confUI(){
      : 'Roosevelt has said nothing yet. He is listening.'}</div>`;
 }
 function conferee(i){
+  lockUI();
   if(conf>=PROVOCATIONS.length) return;
   const p=PROVOCATIONS[conf], t=p.tones[i], T=TONE[t.t];
   note('Answered Baer '+(conf+1)+' of 5, '+T.lab.toLowerCase()+': "'+t.say+'"');
@@ -2117,7 +2132,8 @@ function drawCase(){
   const box=document.getElementById('wits'); if(!box) return;
   box.innerHTML=WITNESSES.map(w=>{
     const on=called.has(w.id), full=called.size>=SLOTS&&!on;
-    return `<div class="wit ${on?'on':''} ${full?'off':''}" data-id="${w.id}">
+    return `<div class="wit ${on?'on':''} ${full?'off':''}" data-id="${w.id}"
+     role="checkbox" tabindex="0" aria-checked="${on}" aria-disabled="${full}">
      <div class="bx">${on?'✕':''}</div>
      <div><span class="nm">${w.nm}</span><span class="rl">${parse(w.rl)}</span>
       <span class="ln">${w.ln}</span>
@@ -2146,6 +2162,7 @@ function drawFind(){
      <div class="st">${st}</div></div>`;}).join('');
 }
 function submitCase(){
+  lockUI();
   note('Called five witnesses: '+WITNESSES.filter(w=>called.has(w.id)).map(w=>w.nm).join(', '));
   const t=tally();
   const strong=FINDINGS.filter(([k])=>k!=='UNION'&&t[k]>=6).length;
@@ -2648,6 +2665,13 @@ function drawBeat(b){
       p.nm.toUpperCase(), p.sub.replace(/&amp;/g,'&').toUpperCase()); }
   else draw(b.scene,false);
 }
+// Enter or Space on any of the custom controls does what a click does.
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter' && e.key!==' ' && e.key!=='Spacebar') return;
+  const t=e.target && e.target.closest && e.target.closest('.tm,.wit,.gl');
+  if(!t) return;
+  e.preventDefault(); t.click();
+});
 function bindGloss(){
   document.querySelectorAll('.gl').forEach(el=>el.onclick=e=>{
     e.stopPropagation();
@@ -2718,6 +2742,7 @@ function bump_(k,v){ // one clamp rule for every meter
   else S[k]=Math.max(0,Math.min(k==='FIELD'?90:100,S[k]+v));
 }
 function choose(i){
+  lockUI();
   const o=BEATS[bi].opts[i];
   if(o.flag) S.flags[o.flag]=true;
   if(o.lead) S.flags.LEAD=o.lead;
@@ -2748,11 +2773,14 @@ function apply(fx,rx,record){
       <span class="bnd">${BAND[band].e} ${BAND[band].t.toUpperCase()}</span></div>
       <q>${rx[k][1]}</q></div></div>`;}).join('');
   recEl.innerHTML=record?`<b>The record</b><br>${record}`:'';
+  // The overlay's own button is static markup, so the input lock has to hand it back.
+  ovl.querySelectorAll('button').forEach(b=>b.disabled=false);
   ovl.style.display='block'; ovl.scrollTop=0;
 }
 // You said you would send your three vice-presidents. This is that meeting: it happens,
 // and you are not in it, so there is no temper for you to keep or lose.
 function deputiesGo(){
+  lockUI();
   note('The conference met in Washington without you');
   const rx={
    cm:['ANGRY','The one room that ever mattered and our own president was not standing in it.'],
@@ -2764,21 +2792,35 @@ function deputiesGo(){
    "Roosevelt invited Mitchell and Baer personally. Mitchell went himself, and afterwards Roosevelt wrote that the only man in the room who behaved like a gentleman was the representative of the miners. That judgement is most of why the commission happened at all.");
 }
 function startConf(){
+  lockUI();
   conf=0; art.innerHTML=scTable('baer');
   whoEl.textContent='The Executive Mansion';
   confUI();
 }
+// A click is only allowed to count once: the handler runs, the buttons on screen go
+// dead, and the redraw that follows puts fresh ones there.
+function lockUI(){
+  uiEl.querySelectorAll('button').forEach(b=>b.disabled=true);
+  ovl.querySelectorAll('button').forEach(b=>b.disabled=true);
+}
 function dismiss(){ ovl.style.display='none'; advance(); }
-function advance(){ bi=Math.min(bi+1,BEATS.length-1); show(); }
+function advance(){
+  lockUI(); bi=Math.min(bi+1,BEATS.length-1); show();
+}
 
 /* ═══ ACT BREAKS ═══ */
 const ACT2=BEATS.findIndex(b=>b.act===2), ACT3=BEATS.findIndex(b=>b.act===3),
       ACT4=BEATS.findIndex(b=>b.act===4);
-function beginActTwo(){ S.warms0=S.warms; bi=ACT2; show(); }
-function beginActThree(){ bi=ACT3; show(); }
+function beginActTwo(){
+  lockUI(); S.warms0=S.warms; bi=ACT2; show();
+}
+function beginActThree(){
+  lockUI(); bi=ACT3; show();
+}
 // The men going back is Act IV's opening event, not an initializer: the fields empty
 // out and the country needs less coal in spring than it did in December.
-function beginActFour(){ prev={...S}; S.HELD=S.FIELD; S.FIELD=6; S.DEMAND=1.1; bi=ACT4; show(); }
+function beginActFour(){
+  lockUI(); prev={...S}; S.HELD=S.FIELD; S.FIELD=6; S.DEMAND=1.1; bi=ACT4; show(); }
 function finish(){
   const a=BEATS[bi].act;
   a===4 ? finishActFour() : a===3 ? finishActThree() : a===2 ? finishActTwo() : finishActOne();
@@ -3087,6 +3129,7 @@ function finishActTwo(){
 }
 
 function noConference(){
+  lockUI();
   endPaper('NO CONFERENCE','President declines to intervene in the coal fields',
    "The telegram never comes.\n\nRoosevelt read the summer the same way the country did. He saw two mobs in a valley. No president spends himself on a side the public has already blamed, and yours was blamed in July.\n\nThe cities freeze. The men go back in November with nothing. The operators take back only the ones they want.\n\n**Ending — the door shut before October.** Everything after the walkout came down to what people thought of you. You spent that in the summer.",
    'The strike is over', AGAIN);
@@ -3120,6 +3163,7 @@ function finishActThree(){
 }
 
 function signIt(){
+  lockUI();
   S.flags.SIGNED=true;
   note('Signed the award');
   const a=award(), good=awardWeight(a);
@@ -3134,6 +3178,7 @@ function signIt(){
   apply({COUNTRY:8,STANDING:good>=7?5:-3},rx,"The award of March 21, 1903 gave a ten per cent increase, a nine-hour day for most trades, a board of conciliation, and no recognition of the union. Mitchell's own left wing called it a sellout.");
 }
 function refuseIt(){
+  lockUI();
   S.flags.REFUSED=true;
   note('Refused the award and called the men out again');
   const rx={
